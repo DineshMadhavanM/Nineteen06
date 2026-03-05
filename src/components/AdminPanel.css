@@ -1,0 +1,125 @@
+.admin-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(47, 30, 27, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.admin-modal {
+    background: var(--cream);
+    width: 100%;
+    max-width: 900px;
+    height: 80vh;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--shadow-medium);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.admin-header {
+    padding: 1.5rem 2rem;
+    background: var(--chocolate);
+    color: var(--white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-header h2 {
+    font-size: 1.8rem;
+    color: var(--white);
+}
+
+.btn-close-admin {
+    background: none;
+    font-size: 2rem;
+    color: var(--white);
+    opacity: 0.8;
+}
+
+.admin-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    border-left: 4px solid var(--caramel);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--chocolate);
+    opacity: 0.6;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--chocolate);
+}
+
+.admin-table-container {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th {
+    background: rgba(47, 30, 27, 0.05);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--chocolate);
+}
+
+.admin-table td {
+    padding: 1rem;
+    border-top: 1px solid rgba(47, 30, 27, 0.05);
+    font-size: 0.95rem;
+}
+
+.admin-table tr:hover {
+    background: rgba(47, 30, 27, 0.02);
+}
+
+.admin-loading,
+.admin-error {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.1rem;
+}
+
+.admin-error {
+    color: #e74c3c;
+}
