@@ -13,6 +13,7 @@ import { Profile } from './components/Profile';
 import { AdminPanel } from './components/AdminPanel';
 import { LoyaltyCard } from './components/LoyaltyCard';
 import { MessageCenter } from './components/MessageCenter';
+import MobileBottomNav from './components/MobileBottomNav';
 import type { MenuItem, CartItem } from './data/menu';
 
 interface User {
@@ -154,6 +155,14 @@ function App() {
       </main>
 
       <Footer />
+
+      <MobileBottomNav
+        cartCount={cartCount}
+        onCartClick={() => setIsOrderSystemOpen(true)}
+        onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onMenuClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
+        onProfileClick={() => setIsProfileOpen(true)}
+      />
 
       {isOrderSystemOpen && (
         <OrderFlow

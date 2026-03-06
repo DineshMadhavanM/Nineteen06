@@ -187,7 +187,49 @@
 }
 
 @media (max-width: 768px) {
+    .navbar {
+        height: 70px !important;
+        background: rgba(247, 239, 227, 0.9) !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: var(--shadow-soft) !important;
+    }
+
+    .nav-content {
+        justify-content: center !important;
+        position: relative !important;
+    }
+
     .nav-links {
-        display: none;
+        display: none !important;
+    }
+
+    .logo {
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    .logo-text {
+        font-size: 1.2rem !important;
+    }
+
+    .logo-subtext {
+        font-size: 0.6rem !important;
+    }
+
+    .nav-actions {
+        position: absolute !important;
+        right: 1.5rem !important;
+        gap: 0.8rem !important;
+    }
+
+    .nav-actions .btn-login-trigger,
+    .nav-actions .user-profile,
+    .nav-actions .btn-cart,
+    .nav-actions .btn-logout {
+        display: none !important;
+    }
+
+    .nav-actions .btn-messages {
+        display: block !important;
     }
 }
