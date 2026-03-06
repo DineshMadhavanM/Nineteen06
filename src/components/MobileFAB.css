@@ -1,0 +1,60 @@
+.mobile-fab {
+    position: fixed;
+    bottom: 90px;
+    /* Above the bottom nav which is 70px */
+    right: 20px;
+    background: var(--caramel);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 20px;
+    display: none;
+    /* Desktop hidden */
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 25px rgba(200, 155, 91, 0.4);
+    z-index: 999;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+}
+
+.mobile-fab.visible {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.mobile-fab:active {
+    transform: scale(0.9);
+}
+
+.fab-text {
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    .mobile-fab {
+        display: flex;
+    }
+}
+
+/* Flutter animation feel */
+@keyframes fabBounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.mobile-fab.visible {
+    animation: fabBounce 4s ease-in-out infinite;
+}

@@ -14,6 +14,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { LoyaltyCard } from './components/LoyaltyCard';
 import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
+import MobileFAB from './components/MobileFAB';
 import type { MenuItem, CartItem } from './data/menu';
 
 interface User {
@@ -163,6 +164,8 @@ function App() {
         onMenuClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
         onProfileClick={() => setIsProfileOpen(true)}
       />
+
+      <MobileFAB onClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })} />
 
       {isOrderSystemOpen && (
         <OrderFlow
