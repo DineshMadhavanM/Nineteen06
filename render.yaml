@@ -1,0 +1,34 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: nineteen06-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.cjs
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+
+  # Frontend Static Site
+  - type: static
+    name: nineteen06-frontend
+    env: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        # Replace with your actual backend URL after the first deployment
+        # Example: https://nineteen06-backend.onrender.com/api/*
+        destination: https://nineteen06-backend.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

@@ -1,0 +1,9 @@
+node_modules/
+.env
+dist/
+.git/
+.vscode/
+*.log
+tmp/
+.temp/
+C:\Users\saran\.gemini\antigravity\brain\
