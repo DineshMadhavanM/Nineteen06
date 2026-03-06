@@ -161,56 +161,70 @@
         margin-bottom: 2rem;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        padding: 1.25rem;
+        padding: 1rem;
         border: 1px solid rgba(47, 30, 27, 0.1);
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem 1.25rem;
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 Columns as requested */
+        gap: 0.5rem 0.75rem;
         width: 100%;
         box-sizing: border-box;
-        /* Ensure padding doesn't add to width */
-        overflow: hidden;
-        /* Contain children */
+        overflow: visible;
+        /* Changed to visible to ensure shadows/tooltips work, but using containment on children */
     }
 
     .admin-table td {
         border: none;
-        padding: 0.5rem 0;
+        padding: 0.4rem 0;
         position: relative;
         text-align: left;
         grid-column: span 1;
         min-width: 0;
-        /* Important for grid item overflow */
         word-wrap: break-word;
         overflow-wrap: break-word;
-        /* Prevent long emails/addresses from breaking layout */
+        font-size: 0.8rem;
     }
 
-    /* Column 1: ID & Name, Column 2: Contact & Address */
-    /* These naturally take the 1fr slots created by repeat(2, 1fr) */
+    /* Mapping to 3 Columns */
+    .admin-table td[data-label="ID & Name"] {
+        grid-column: 1;
+    }
 
-    /* Details, Status, Actions should take full width */
+    .admin-table td[data-label="Contact"] {
+        grid-column: 2;
+    }
+
+    /* Grouping Total, Details, and Status into Column 3 */
+    .admin-table td[data-label="Total"],
     .admin-table td[data-label="Details"],
     .admin-table td[data-label="Status / Action"],
-    .admin-table td[data-label="Status"],
+    .admin-table td[data-label="Status"] {
+        grid-column: 3;
+        width: 100%;
+    }
+
     .admin-table td[data-label="Loyalty Progress"],
+    .admin-table td[data-label="Joined"],
+    .admin-table td[data-label="Email"],
+    .admin-table td[data-label="Phone"] {
+        grid-column: span 1;
+    }
+
+    /* Style dividers */
     .admin-table td[data-label="Total"],
-    .admin-table td[data-label="Joined"] {
-        grid-column: span 2;
-        border-top: 1px solid rgba(47, 30, 27, 0.05);
-        /* Lighter divider */
-        padding-top: 1rem;
-        margin-top: 0.25rem;
+    .admin-table td[data-label="Details"] {
+        border-top: none;
+        /* Align neatly in col 3 */
     }
 
     .admin-table td::before {
         content: attr(data-label);
         font-weight: 800;
         text-transform: uppercase;
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         color: var(--chocolate);
         display: block;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.3rem;
         letter-spacing: 0.5px;
         opacity: 0.8;
     }

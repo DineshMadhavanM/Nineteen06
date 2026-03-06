@@ -215,12 +215,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                 <strong>{order.customerName}</strong><br />
                                                 <span style={{ fontSize: '0.8rem' }}>{order.customerEmail}</span>
                                             </td>
-                                            <td data-label="Contact">{order.customerPhone || '-'}<br />{order.address}</td>
+                                            <td data-label="Contact">
+                                                <span style={{ fontWeight: '600' }}>{order.customerPhone || '-'}</span><br />
+                                                <span style={{ fontSize: '0.85rem' }}>{order.address}</span>
+                                            </td>
+                                            <td data-label="Total">
+                                                <strong style={{ fontSize: '1.1rem', color: 'var(--chocolate)' }}>₹{order.totalAmount}</strong>
+                                            </td>
                                             <td data-label="Details">
-                                                <div style={{ fontSize: '0.9rem' }}>
+                                                <div style={{ fontSize: '0.9rem', color: 'var(--chocolate)' }}>
                                                     {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
                                                 </div>
-                                                {order.instructions && <div style={{ color: 'var(--caramel)', fontSize: '0.8rem', marginTop: '0.4rem' }}>Note: {order.instructions}</div>}
+                                                {order.instructions && <div style={{ color: 'var(--caramel)', fontSize: '0.8rem', marginTop: '0.4rem', fontWeight: '500' }}>Note: {order.instructions}</div>}
                                             </td>
                                             <td data-label="Status / Action">
                                                 {order.status === 'Pending' ? (
