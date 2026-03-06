@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 
+import logoImg from '../assets/images/Logo.png';
+
 interface User {
     email: string;
     username?: string;
@@ -35,6 +37,9 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
             <div className="container nav-content">
+                <div className="nav-logo-mobile">
+                    <img src={logoImg} alt="Nineteen 06" className="mobile-logo-img" />
+                </div>
                 <div className="logo">
                     <span className="logo-text">NINETEEN 06</span>
                     <span className="logo-subtext">Homemade Desserts</span>

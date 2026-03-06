@@ -18,6 +18,10 @@
     box-shadow: var(--shadow-soft);
 }
 
+.nav-logo-mobile {
+    display: none;
+}
+
 .nav-content {
     display: flex;
     justify-content: space-between;
@@ -206,6 +210,20 @@
     .logo {
         align-items: center !important;
         text-align: center !important;
+    }
+
+    .nav-logo-mobile {
+        display: block !important;
+        position: absolute !important;
+        left: 1rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+    }
+
+    .mobile-logo-img {
+        height: 45px !important;
+        width: auto !important;
+        object-fit: contain !important;
     }
 
     .logo-text {
