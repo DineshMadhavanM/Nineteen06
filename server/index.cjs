@@ -17,5 +17,10 @@ mongoose.connect(MONGO_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 
+// Root route for deployment verification
+app.get('/', (req, res) => {
+    res.send('🍰 Nineteen06 API is running...');
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

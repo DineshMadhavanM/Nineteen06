@@ -6,6 +6,7 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: node server/index.cjs
+    healthCheckPath: /
     envVars:
       - key: MONGODB_URI
         sync: false
@@ -26,8 +27,7 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        # Replace with your actual backend URL after the first deployment
-        # Example: https://nineteen06-backend.onrender.com/api/*
+        # IMPORTANT: Ensure this matches your actual backend service name
         destination: https://nineteen06-backend.onrender.com/api/*
       - type: rewrite
         source: /*
