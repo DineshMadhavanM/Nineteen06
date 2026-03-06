@@ -160,27 +160,47 @@
         background: var(--white);
         margin-bottom: 1.5rem;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        padding: 1rem;
-        border: 1px solid rgba(47, 30, 27, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        /* Slightly deeper shadow for contrast */
+        padding: 1.2rem;
+        border: 1px solid rgba(47, 30, 27, 0.12);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem 1rem;
     }
 
     .admin-table td {
         border: none;
-        padding: 0.5rem 0;
+        padding: 0.4rem 0;
         position: relative;
         text-align: left;
+        grid-column: span 1;
+        /* Default to 1 column */
+    }
+
+    .admin-table td[data-label="Details"],
+    .admin-table td[data-label="Status / Action"],
+    .admin-table td[data-label="Status"],
+    .admin-table td[data-label="Loyalty Progress"],
+    .admin-table td[data-label="Total"],
+    .admin-table td[data-label="Joined"] {
+        grid-column: span 2;
+        border-top: 1px dashed rgba(47, 30, 27, 0.1);
+        padding-top: 0.8rem;
+        margin-top: 0.5rem;
     }
 
     .admin-table td::before {
         content: attr(data-label);
-        font-weight: 700;
+        font-weight: 800;
+        /* Bolder label */
         text-transform: uppercase;
-        font-size: 0.7rem;
-        color: var(--caramel);
+        font-size: 0.65rem;
+        color: var(--chocolate);
+        /* Darker label color */
         display: block;
-        margin-bottom: 0.2rem;
-        opacity: 0.7;
+        margin-bottom: 0.3rem;
+        letter-spacing: 0.5px;
     }
 
     .admin-cakes-grid {

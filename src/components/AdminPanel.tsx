@@ -269,7 +269,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 </tbody>
                             </table>
 
-                            <h3 className="serif" style={{ margin: '2rem 0 1rem', color: 'var(--chocolate)', opacity: 0.6 }}>Order History</h3>
+                            <h3 className="serif" style={{ margin: '2rem 0 1rem', color: 'var(--chocolate)' }}>Order History</h3>
                             <div className="admin-table-container">
                                 <table className="admin-table">
                                     <thead>
@@ -283,9 +283,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                     </thead>
                                     <tbody>
                                         {orders.filter(o => o.status === 'Completed' || o.status === 'Cancelled').map(order => (
-                                            <tr key={order._id} style={{ opacity: 0.7 }}>
+                                            <tr key={order._id}>
                                                 <td data-label="ID & Name">
-                                                    <span style={{ fontSize: '0.7rem', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
+                                                    <span style={{ fontSize: '0.7rem', color: 'var(--caramel)', fontWeight: 'bold' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
                                                     <strong>{order.customerName}</strong>
                                                 </td>
                                                 <td data-label="Contact">
