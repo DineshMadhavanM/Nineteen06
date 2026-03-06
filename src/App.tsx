@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import Trending from './components/Trending';
 import Menu from './components/Menu';
 import WhyChooseUs from './components/WhyChooseUs';
+import AboutUs from './components/AboutUs';
 import InstagramGallery from './components/InstagramGallery';
 import CustomerReviews from './components/CustomerReviews';
 import Footer from './components/Footer';
@@ -142,6 +143,7 @@ function App() {
         <Trending onAddToCart={addToCart} />
         <Menu onAddToCart={addToCart} />
         <WhyChooseUs />
+        <AboutUs />
         <InstagramGallery />
         <CustomerReviews />
       </main>

@@ -48,7 +48,7 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
                 <ul className="nav-links">
                     <li><a href="#hero">Home</a></li>
                     <li><a href="#menu">Menu</a></li>
-                    <li><a href="#why-us">About</a></li>
+                    <li><a href="#about">About</a></li>
                     <li><a href="#reviews">Reviews</a></li>
                     {user?.isAdmin && <li><a href="#" onClick={(e) => { e.preventDefault(); onAdminClick(); }} className="admin-link">Admin</a></li>}
                 </ul>
