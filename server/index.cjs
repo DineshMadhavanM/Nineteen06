@@ -1,7 +1,14 @@
 const path = require('path');
 const express = require('express');
+const fs = require('fs');
+
+// Try to load .env locally, but don't fail if it doesn't exist (e.g., on Render)
 const envPath = path.resolve(__dirname, '../.env');
-require('dotenv').config({ path: envPath });
+if (fs.existsSync(envPath)) {
+    require('dotenv').config({ path: envPath });
+} else {
+    require('dotenv').config(); // Fallback to default check
+}
 
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -16,7 +23,13 @@ const MONGO_URI = process.env.MONGODB_URI;
 
 if (!MONGO_URI) {
     console.error('CRITICAL ERROR: MONGODB_URI is undefined.');
-    console.log('Checked path:', envPath);
+    console.log('----------------------------------------------------');
+    console.log('IF YOU ARE DEPLOYING ON RENDER:');
+    console.log('1. Go to your Render Dashboard');
+    console.log('2. Select this Web Service -> Environment');
+    console.log('3. Add Environment Variable: Key="MONGODB_URI" Value="your_mongodb_connection_string"');
+    console.log('4. Click "Save Changes" and Render will redeploy.');
+    console.log('----------------------------------------------------');
     process.exit(1);
 }
 
