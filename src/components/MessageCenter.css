@@ -151,3 +151,22 @@
 .delivery-info strong {
     color: #2ecc71;
 }
+
+@media (max-width: 768px) {
+    .message-modal {
+        max-height: 95vh;
+        max-width: 100%;
+    }
+
+    .message-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .message-content {
+        padding: 1.2rem;
+    }
+
+    .order-card {
+        padding: 1rem;
+    }
+}
