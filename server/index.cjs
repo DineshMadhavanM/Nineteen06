@@ -43,9 +43,20 @@ mongoose.connect(MONGO_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 
-// Root route for deployment verification
-app.get('/', (req, res) => {
-    res.send('🍰 Nineteen06 API is running...');
+// ─── Frontend Serving (Production) ──────────────────────────────────────────
+// Serve static files from the Vite build directory
+const distPath = path.resolve(__dirname, '../dist');
+app.use(express.static(distPath));
+
+// Catch-all route to serve the React app's index.html
+// This MUST be after API routes and static middleware
+app.get('*', (req, res) => {
+    const indexPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send('Frontend build not found. Please run "npm run build".');
+    }
 });
 
 const PORT = process.env.PORT || 3001;
