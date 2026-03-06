@@ -80,9 +80,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             if (response.ok) {
                 fetchData();
                 alert('Order confirmed and message sent to customer!');
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                alert('Confirm failed: ' + (errorData.message || response.statusText));
             }
         } catch (err) {
-            alert('Update failed');
+            alert('Confirm request error');
         }
     };
 
@@ -99,9 +102,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             if (response.ok) {
                 fetchData();
                 alert('Order marked as Completed and moved to history!');
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                alert('Completion failed: ' + (errorData.message || response.statusText));
             }
         } catch (err) {
-            alert('Update failed');
+            alert('Completion request error');
         }
     };
 
@@ -254,15 +260,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                         <button
                                                             className="btn-complete-order"
                                                             style={{
-                                                                padding: '0.5rem 0.8rem',
-                                                                fontSize: '0.75rem',
+                                                                padding: '0.7rem 1rem',
+                                                                fontSize: '0.8rem',
                                                                 background: '#27ae60',
                                                                 color: 'white',
                                                                 border: 'none',
                                                                 borderRadius: '4px',
                                                                 cursor: 'pointer',
                                                                 fontWeight: 'bold',
-                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                                                minHeight: '44px' /* Apple's recommended minimum touch target */
                                                             }}
                                                             onClick={() => handleCompleteOrder(order._id)}
                                                         >
