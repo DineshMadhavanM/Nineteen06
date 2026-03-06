@@ -50,7 +50,7 @@ app.use(express.static(distPath));
 
 // Catch-all route to serve the React app's index.html
 // This MUST be after API routes and static middleware
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
     const indexPath = path.join(distPath, 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
