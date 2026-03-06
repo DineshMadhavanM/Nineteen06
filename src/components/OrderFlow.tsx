@@ -151,21 +151,28 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
 
                                 <div className="order-details-form">
                                     <div className="form-group">
-                                        <label>Delivery Address {orderType === 'Now' && <span className="required">*</span>}</label>
+                                        <label>
+                                            <span className="label-icon">📍</span> Delivery Address
+                                            {orderType === 'Now' && <span className="required">*</span>}
+                                        </label>
                                         <textarea
                                             placeholder={orderType === 'Now' ? "Enter your full address" : "N/A for pickup"}
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
                                             disabled={orderType !== 'Now'}
+                                            className="premium-input"
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>Special Instructions (Optional)</label>
+                                        <label>
+                                            <span className="label-icon">📝</span> Special Instructions (Optional)
+                                        </label>
                                         <input
                                             type="text"
                                             placeholder="Example: Extra cream, Zero egg, etc."
                                             value={instructions}
                                             onChange={(e) => setInstructions(e.target.value)}
+                                            className="premium-input"
                                         />
                                     </div>
                                 </div>
