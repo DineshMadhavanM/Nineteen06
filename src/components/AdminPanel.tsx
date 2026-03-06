@@ -104,7 +104,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 alert('Order marked as Completed and moved to history!');
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                alert(`Completion failed (Status: ${response.status}): ` + (errorData.message || response.statusText));
+                const currentUrl = window.location.origin;
+                alert(`Completion failed (Status: ${response.status}):\n` +
+                    (errorData.message || response.statusText) +
+                    ` \n\nIMPORTANT: You are currently on ${currentUrl}. ` +
+                    `If this is NOT your Backend URL, visit your Backend URL to fix this 404.`);
             }
         } catch (err) {
             alert('Completion request error');
