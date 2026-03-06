@@ -210,7 +210,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 <tbody>
                                     {orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled').map(order => (
                                         <tr key={order._id}>
-                                            <td data-label="Customer">
+                                            <td data-label="ID & Name">
                                                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
                                                 <strong>{order.customerName}</strong><br />
                                                 <span style={{ fontSize: '0.8rem' }}>{order.customerEmail}</span>
