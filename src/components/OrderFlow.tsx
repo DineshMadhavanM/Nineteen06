@@ -10,31 +10,59 @@ interface OrderFlowProps {
     onClear: () => void;
 }
 
-type OrderStatus = 'Idle' | 'Order Placed' | 'Preparing' | 'Ready for pickup' | 'Completed';
+type OrderStatus = 'Idle' | 'Order Placed' | 'Confirmed' | 'Preparing' | 'Ready' | 'Completed';
 
 export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, onUpdateQuantity, onClear }) => {
     const [status, setStatus] = useState<OrderStatus>('Idle');
     const [preparationTime, setPreparationTime] = useState(10);
     const [orderType, setOrderType] = useState<'Now' | 'Pre-Order'>('Now');
     const [preOrderTime, setPreOrderTime] = useState<'30m' | '1h'>('30m');
+    const [address, setAddress] = useState('');
+    const [instructions, setInstructions] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [placedOrder, setPlacedOrder] = useState<any>(null);
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const packagingCharge = (cart.length > 0 && orderType === 'Now') ? 10 : 0;
     const total = subtotal + packagingCharge;
 
-    const handlePlaceOrder = () => {
-        setStatus('Order Placed');
+    const handlePlaceOrder = async () => {
+        if (orderType === 'Now' && !address.trim()) {
+            alert('Please enter a delivery address');
+            return;
+        }
 
-        // Simulate order workflow
-        setTimeout(() => setStatus('Preparing'), 2000);
-        setTimeout(() => setStatus('Ready for pickup'), 8000);
-        setTimeout(() => {
-            setStatus('Completed');
-            setTimeout(() => {
+        setIsSubmitting(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token || ''
+                },
+                body: JSON.stringify({
+                    items: cart,
+                    totalAmount: total,
+                    address: orderType === 'Now' ? address : 'Self-Pickup',
+                    instructions
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setPlacedOrder(data);
+                setStatus('Order Placed');
                 onClear();
-                onClose();
-            }, 3000);
-        }, 15000);
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Failed to place order. Please log in.');
+            }
+        } catch (err) {
+            alert('Connection error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     useEffect(() => {
@@ -120,6 +148,27 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                         </div>
                                     </div>
                                 )}
+
+                                <div className="order-details-form">
+                                    <div className="form-group">
+                                        <label>Delivery Address {orderType === 'Now' && <span className="required">*</span>}</label>
+                                        <textarea
+                                            placeholder={orderType === 'Now' ? "Enter your full address" : "N/A for pickup"}
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            disabled={orderType !== 'Now'}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Special Instructions (Optional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Example: Extra cream, Zero egg, etc."
+                                            value={instructions}
+                                            onChange={(e) => setInstructions(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -137,7 +186,13 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                     <span>Total</span>
                                     <span>₹{total}</span>
                                 </div>
-                                <button className="btn-checkout" onClick={handlePlaceOrder}>Place Order Now</button>
+                                <button
+                                    className="btn-checkout"
+                                    onClick={handlePlaceOrder}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Processing...' : 'Place Order Now'}
+                                </button>
                             </div>
                         )}
                     </>
@@ -146,27 +201,34 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                         <div className="status-animation">
                             <div className={`status-icon ${status.toLowerCase().replace(/ /g, '-')}`}>
                                 {status === 'Order Placed' && '📝'}
+                                {status === 'Confirmed' && '⏳'}
                                 {status === 'Preparing' && '👨‍🍳'}
-                                {status === 'Ready for pickup' && '🛍️'}
+                                {status === 'Ready' && '🛍️'}
                                 {status === 'Completed' && '✅'}
                             </div>
                         </div>
                         <h3 className="status-title">{status}</h3>
                         <p className="status-desc">
-                            {status === 'Order Placed' && 'The bakery has received your order and will start soon.'}
+                            {status === 'Order Placed' && 'The bakery has received your order. Waiting for admin confirmation.'}
+                            {status === 'Confirmed' && (
+                                placedOrder?.deliveryTime
+                                    ? `Confirmed! Estimated delivery: ${placedOrder.deliveryTime}`
+                                    : 'Confirmed by admin! Estimated time coming soon.'
+                            )}
                             {status === 'Preparing' && (
                                 orderType === 'Pre-Order'
                                     ? `We're crafting your pre-order. It will be ready for pickup in approx ${preOrderTime === '30m' ? '30' : '60'} mins.`
                                     : `We're crafting your dessert with love. Approx ${preparationTime} mins remaining.`
                             )}
-                            {status === 'Ready for pickup' && 'Fresh and hot! Please collect your order from the counter.'}
+                            {status === 'Ready' && 'Fresh and hot! Please collect your order from the counter.'}
                             {status === 'Completed' && 'Thank you for choosing NINETEEN 06! Enjoy your treat.'}
                         </p>
 
                         <div className="status-steps">
                             <div className="step done">Placed</div>
-                            <div className={`step ${['Preparing', 'Ready for pickup', 'Completed'].includes(status) ? 'done' : ''} ${status === 'Preparing' ? 'active' : ''}`}>Preparing</div>
-                            <div className={`step ${['Ready for pickup', 'Completed'].includes(status) ? 'done' : ''} ${status === 'Ready for pickup' ? 'active' : ''}`}>Ready</div>
+                            <div className={`step ${['Confirmed', 'Preparing', 'Ready', 'Completed'].includes(status) ? 'done' : ''} ${status === 'Confirmed' ? 'active' : ''}`}>Confirmed</div>
+                            <div className={`step ${['Preparing', 'Ready', 'Completed'].includes(status) ? 'done' : ''} ${status === 'Preparing' ? 'active' : ''}`}>Preparing</div>
+                            <div className={`step ${['Ready', 'Completed'].includes(status) ? 'done' : ''} ${status === 'Ready' ? 'active' : ''}`}>Ready</div>
                         </div>
 
                         <button className="btn-close-status" onClick={onClose}>Keep Browsing</button>
@@ -176,5 +238,3 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
         </div>
     );
 };
-
-

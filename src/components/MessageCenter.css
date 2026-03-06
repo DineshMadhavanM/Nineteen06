@@ -1,0 +1,153 @@
+.message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(47, 30, 27, 0.4);
+    backdrop-filter: blur(5px);
+    z-index: 2500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.message-modal {
+    background: var(--cream);
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-medium);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.message-header {
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(47, 30, 27, 0.05);
+    background: var(--pistachio);
+}
+
+.message-header h2 {
+    font-size: 1.5rem;
+    color: var(--chocolate);
+}
+
+.btn-close-msg {
+    background: none;
+    font-size: 2rem;
+    color: var(--chocolate);
+    line-height: 1;
+}
+
+.message-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.loading-msg,
+.no-messages {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--chocolate);
+    opacity: 0.6;
+}
+
+.msg-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.order-card {
+    background: white;
+    padding: 1.2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow-soft);
+    border-left: 5px solid #ccc;
+}
+
+.order-card.status-pending {
+    border-left-color: #f1c40f;
+}
+
+.order-card.status-confirmed {
+    border-left-color: #3498db;
+}
+
+.order-card.status-preparing {
+    border-left-color: #e67e22;
+}
+
+.order-card.status-ready {
+    border-left-color: #2ecc71;
+}
+
+.order-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.order-date {
+    color: var(--caramel);
+}
+
+.order-status-badge {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--pistachio);
+}
+
+.order-items {
+    font-size: 0.95rem;
+    color: var(--chocolate);
+    margin-bottom: 0.5rem;
+}
+
+.order-total {
+    font-weight: 700;
+    color: var(--caramel);
+    font-size: 1rem;
+}
+
+.admin-response {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed rgba(47, 30, 27, 0.1);
+}
+
+.response-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2ecc71;
+    margin-bottom: 0.2rem;
+}
+
+.delivery-info {
+    font-size: 1.1rem;
+    color: var(--chocolate);
+}
+
+.delivery-info strong {
+    color: #2ecc71;
+}

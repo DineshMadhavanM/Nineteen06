@@ -16,11 +16,12 @@ interface NavbarProps {
     onLoginClick: () => void;
     onProfileClick: () => void;
     onAdminClick: () => void;
+    onMessageClick: () => void;
     user: User | null;
     onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, onProfileClick, onAdminClick, user, onLogout }) => {
+const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, onProfileClick, onAdminClick, onMessageClick, user, onLogout }) => {
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
@@ -49,12 +50,16 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
 
                 <div className="nav-actions">
                     {user ? (
-                        <div className="user-profile" onClick={onProfileClick} style={{ cursor: 'pointer' }}>
-                            <span className="user-email">{user.username || user.email.split('@')[0]}</span>
-                            <button className="btn-logout" onClick={(e) => {
-                                e.stopPropagation();
-                                onLogout();
-                            }}>Logout</button>
+                        <div className="user-profile">
+                            <div className="user-info-clickable" onClick={onProfileClick} style={{ cursor: 'pointer' }}>
+                                <span className="user-email">{user.username || user.email.split('@')[0]}</span>
+                            </div>
+                            <button className="btn-messages" onClick={onMessageClick} title="Messages">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </button>
+                            <button className="btn-logout" onClick={onLogout}>Logout</button>
                         </div>
                     ) : (
                         <button className="btn-login-trigger" onClick={onLoginClick}>Login / Signup</button>

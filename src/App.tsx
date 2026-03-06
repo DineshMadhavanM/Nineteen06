@@ -12,6 +12,7 @@ import { Auth } from './components/Auth';
 import { Profile } from './components/Profile';
 import { AdminPanel } from './components/AdminPanel';
 import { LoyaltyCard } from './components/LoyaltyCard';
+import { MessageCenter } from './components/MessageCenter';
 import type { MenuItem, CartItem } from './data/menu';
 
 interface User {
@@ -33,6 +34,7 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [notification, setNotification] = useState<{ message: string, type: 'info' | 'success' } | null>(null);
 
@@ -119,6 +121,7 @@ function App() {
         onLoginClick={() => setIsAuthOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
         onAdminClick={() => setIsAdminOpen(true)}
+        onMessageClick={() => setIsMessageOpen(true)}
         user={user}
         onLogout={handleLogout}
       />
@@ -190,6 +193,10 @@ function App() {
         <AdminPanel
           onClose={() => setIsAdminOpen(false)}
         />
+      )}
+
+      {isMessageOpen && (
+        <MessageCenter onClose={() => setIsMessageOpen(false)} />
       )}
     </div>
   );

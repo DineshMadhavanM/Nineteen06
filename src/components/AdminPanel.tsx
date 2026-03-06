@@ -16,40 +16,80 @@ interface UserData {
     createdAt: string;
 }
 
+interface Order {
+    _id: string;
+    items: any[];
+    totalAmount: number;
+    address: string;
+    instructions?: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone?: string;
+    status: string;
+    deliveryTime?: string;
+    createdAt: string;
+}
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     const [users, setUsers] = useState<UserData[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [activeTab, setActiveTab] = useState<'users' | 'orders'>('users');
+    const [deliveryTimes, setDeliveryTimes] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
-        fetchUsers();
+        fetchData();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchData = async () => {
+        setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/auth/admin/users', {
-                headers: { 'x-auth-token': token || '' }
-            });
-            const data = await response.json();
-            if (response.ok) {
-                setUsers(data);
-            } else {
-                setError(data.message || 'Failed to fetch users');
-            }
-        } catch {
-            setError('Server connection error');
+            const [usersRes, ordersRes] = await Promise.all([
+                fetch('/api/auth/admin/users', { headers: { 'x-auth-token': token || '' } }),
+                fetch('/api/orders/admin', { headers: { 'x-auth-token': token || '' } })
+            ]);
+
+            if (usersRes.ok) setUsers(await usersRes.json());
+            if (ordersRes.ok) setOrders(await ordersRes.json());
+        } catch (err) {
+            console.error('Fetch error');
         } finally {
             setLoading(false);
         }
     };
 
+    const handleConfirmOrder = async (orderId: string) => {
+        const dTime = deliveryTimes[orderId];
+        if (!dTime) {
+            alert('Please specify delivery time');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/orders/${orderId}/confirm`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token || ''
+                },
+                body: JSON.stringify({ deliveryTime: dTime })
+            });
+
+            if (response.ok) {
+                fetchData();
+                alert('Order confirmed and message sent to customer!');
+            }
+        } catch (err) {
+            alert('Update failed');
+        }
+    };
+
     const handleCakeToggle = async (userId: string, cakeIndex: number) => {
-        console.log(`Toggling cake ${cakeIndex} for user ${userId}`);
         try {
             const token = localStorage.getItem('token');
             const url = `/api/auth/admin/users/${userId}/loyalty`;
-            console.log(`Fetching: ${url}`);
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -58,21 +98,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 },
                 body: JSON.stringify({ cakeIndex })
             });
+
             if (response.ok) {
-                // Update local state
-                const updatedUsers = users.map(u => {
+                setUsers(users.map(u => {
                     if (u._id === userId) {
-                        const loyalty = u.loyaltyCakes || [false, false, false, false, false, false, false, false, false];
-                        const newLoyalty = [...loyalty];
-                        newLoyalty[cakeIndex] = !newLoyalty[cakeIndex];
-                        return { ...u, loyaltyCakes: newLoyalty };
+                        const newCakes = [...(u.loyaltyCakes || Array(9).fill(false))];
+                        newCakes[cakeIndex] = !newCakes[cakeIndex];
+                        return { ...u, loyaltyCakes: newCakes };
                     }
                     return u;
-                });
-                setUsers(updatedUsers);
+                }));
             }
         } catch (err) {
-            console.error('Failed to toggle cake:', err);
+            console.error('Update failed');
         }
     };
 
@@ -81,32 +119,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             <div className="admin-modal">
                 <div className="admin-header">
                     <h2 className="serif">Admin Dashboard</h2>
+                    <div className="admin-tabs">
+                        <button
+                            className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('users')}
+                        >
+                            Users
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('orders')}
+                        >
+                            Orders/Messages
+                        </button>
+                    </div>
                     <button className="btn-close-admin" onClick={onClose}>×</button>
                 </div>
 
                 <div className="admin-content">
-                    <div className="admin-stats">
-                        <div className="stat-card">
-                            <h3>Total Users</h3>
-                            <p className="stat-value">{users.length}</p>
-                        </div>
-                    </div>
-
                     {loading ? (
-                        <p className="admin-loading">Loading users...</p>
-                    ) : error ? (
-                        <p className="admin-error">{error}</p>
-                    ) : (
-                        <div className="admin-table-container">
+                        <p>Loading data...</p>
+                    ) : activeTab === 'users' ? (
+                        <div className="table-container">
                             <table className="admin-table">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
-                                        <th>City</th>
-                                        <th>Cakes</th>
                                         <th>Joined</th>
+                                        <th>Loyalty Progress</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -115,22 +157,73 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             <td>{user.username || '-'}</td>
                                             <td>{user.email}</td>
                                             <td>{user.phone || '-'}</td>
-                                            <td>{user.city || '-'}</td>
+                                            <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                                             <td>
                                                 <div className="admin-cakes-grid">
-                                                    {(user.loyaltyCakes || Array(9).fill(false)).map((isMarked: boolean, index: number) => (
+                                                    {(user.loyaltyCakes || Array(9).fill(false)).map((isMarked, idx) => (
                                                         <span
-                                                            key={index}
+                                                            key={idx}
                                                             className={`admin-cake-icon ${isMarked ? 'active' : ''}`}
-                                                            onClick={() => handleCakeToggle(user._id, index)}
-                                                            title={`Cake ${index + 1}`}
+                                                            onClick={() => handleCakeToggle(user._id, idx)}
                                                         >
-                                                            🍰
+                                                            🧁
                                                         </span>
                                                     ))}
                                                 </div>
                                             </td>
-                                            <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="orders-container">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Contact</th>
+                                        <th>Details</th>
+                                        <th>Status/Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orders.map(order => (
+                                        <tr key={order._id}>
+                                            <td>
+                                                <strong>{order.customerName}</strong><br />
+                                                <span style={{ fontSize: '0.8rem' }}>{order.customerEmail}</span>
+                                            </td>
+                                            <td>{order.customerPhone || '-'}<br />{order.address}</td>
+                                            <td>
+                                                <div style={{ fontSize: '0.9rem' }}>
+                                                    {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
+                                                </div>
+                                                {order.instructions && <div style={{ color: 'var(--caramel)', fontSize: '0.8rem', marginTop: '0.4rem' }}>Note: {order.instructions}</div>}
+                                            </td>
+                                            <td>
+                                                {order.status === 'Pending' ? (
+                                                    <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem' }}>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Delivery time"
+                                                            style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.8rem', width: '100px' }}
+                                                            onChange={(e) => setDeliveryTimes({ ...deliveryTimes, [order._id]: e.target.value })}
+                                                        />
+                                                        <button
+                                                            className="tab-btn active"
+                                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                                                            onClick={() => handleConfirmOrder(order._id)}
+                                                        >
+                                                            Confirm
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                                        {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
+                                                    </span>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
