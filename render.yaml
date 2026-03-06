@@ -18,7 +18,7 @@ services:
         value: production
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: nineteen06-frontend
     env: static
     plan: free
