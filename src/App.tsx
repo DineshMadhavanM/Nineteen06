@@ -11,7 +11,6 @@ import { OrderFlow } from './components/OrderFlow';
 import { Auth } from './components/Auth';
 import { Profile } from './components/Profile';
 import { AdminPanel } from './components/AdminPanel';
-import { LoyaltyCard } from './components/LoyaltyCard';
 import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
 import MobileFAB from './components/MobileFAB';
