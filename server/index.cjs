@@ -1,6 +1,8 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const express = require('express');
+const envPath = path.resolve(__dirname, '../.env');
+require('dotenv').config({ path: envPath });
+
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/auth.cjs');
@@ -11,9 +13,19 @@ app.use(express.json());
 app.use(cors());
 
 const MONGO_URI = process.env.MONGODB_URI;
+
+if (!MONGO_URI) {
+    console.error('CRITICAL ERROR: MONGODB_URI is undefined.');
+    console.log('Checked path:', envPath);
+    process.exit(1);
+}
+
 mongoose.connect(MONGO_URI)
-    .then(() => console.log('MongoDB Connected via Environment Variable'))
-    .catch(err => console.log('MongoDB Connection Error:', err));
+    .then(() => console.log('MongoDB Connected successfully!'))
+    .catch(err => {
+        console.error('MongoDB Connection Error:', err.message);
+        process.exit(1);
+    });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
