@@ -18,10 +18,8 @@ services:
         value: production
 
   # Frontend Static Site
-  - type: web
+  - type: static_site
     name: nineteen06-frontend
-    env: static
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     routes:
