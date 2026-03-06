@@ -8,11 +8,13 @@ interface OrderFlowProps {
     onRemove: (id: string) => void;
     onUpdateQuantity: (id: string, delta: number) => void;
     onClear: () => void;
+    onLoginClick: () => void;
+    isLoggedIn: boolean;
 }
 
 type OrderStatus = 'Idle' | 'Order Placed' | 'Confirmed' | 'Preparing' | 'Ready' | 'Completed';
 
-export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, onUpdateQuantity, onClear }) => {
+export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, onUpdateQuantity, onClear, onLoginClick, isLoggedIn }) => {
     const [status, setStatus] = useState<OrderStatus>('Idle');
     const [preparationTime, setPreparationTime] = useState(10);
     const [orderType, setOrderType] = useState<'Now' | 'Pre-Order'>('Now');
@@ -27,6 +29,13 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
     const total = subtotal + packagingCharge;
 
     const handlePlaceOrder = async () => {
+        if (!isLoggedIn) {
+            if (window.confirm('You need to log in or join us to place an order. Continue to Login?')) {
+                onLoginClick();
+            }
+            return;
+        }
+
         if (orderType === 'Now' && !address.trim()) {
             alert('Please enter a delivery address');
             return;
@@ -84,100 +93,102 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
 
                 {status === 'Idle' ? (
                     <>
-                        <div className="cart-items">
-                            {cart.length === 0 ? (
-                                <div className="empty-cart">
-                                    <span className="empty-icon">🧺</span>
-                                    <p>Your cart is empty</p>
-                                    <button className="btn-primary-sm" onClick={onClose}>Browse Menu</button>
-                                </div>
-                            ) : (
-                                cart.map(item => (
-                                    <div key={item.id} className="cart-item">
-                                        <div className="item-info">
-                                            <h4>{item.name}</h4>
-                                            <p>₹{item.price}</p>
-                                        </div>
-                                        <div className="item-actions">
-                                            <div className="quantity-controls">
-                                                <button onClick={() => onUpdateQuantity(item.id, -1)}>−</button>
-                                                <span>{item.quantity}</span>
-                                                <button onClick={() => onUpdateQuantity(item.id, 1)}>+</button>
+                        <div className="order-content-scrollable">
+                            <div className="cart-items">
+                                {cart.length === 0 ? (
+                                    <div className="empty-cart">
+                                        <span className="empty-icon">🧺</span>
+                                        <p>Your cart is empty</p>
+                                        <button className="btn-primary-sm" onClick={onClose}>Browse Menu</button>
+                                    </div>
+                                ) : (
+                                    cart.map(item => (
+                                        <div key={item.id} className="cart-item">
+                                            <div className="item-info">
+                                                <h4>{item.name}</h4>
+                                                <p>₹{item.price}</p>
                                             </div>
-                                            <button className="btn-remove" onClick={() => onRemove(item.id)}>Remove</button>
+                                            <div className="item-actions">
+                                                <div className="quantity-controls">
+                                                    <button onClick={() => onUpdateQuantity(item.id, -1)}>−</button>
+                                                    <span>{item.quantity}</span>
+                                                    <button onClick={() => onUpdateQuantity(item.id, 1)}>+</button>
+                                                </div>
+                                                <button className="btn-remove" onClick={() => onRemove(item.id)}>Remove</button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {cart.length > 0 && (
+                                <div className="order-options">
+                                    <h4 className="option-title">How would you like to receive?</h4>
+                                    <div className="type-toggle">
+                                        <button
+                                            className={orderType === 'Now' ? 'active' : ''}
+                                            onClick={() => setOrderType('Now')}
+                                        >
+                                            Order Now (Delivery)
+                                        </button>
+                                        <button
+                                            className={orderType === 'Pre-Order' ? 'active' : ''}
+                                            onClick={() => setOrderType('Pre-Order')}
+                                        >
+                                            Pre-order Pickup
+                                        </button>
+                                    </div>
+
+                                    {orderType === 'Pre-Order' && (
+                                        <div className="time-selector">
+                                            <span>Pick up in:</span>
+                                            <div className="time-btns">
+                                                <button
+                                                    className={preOrderTime === '30m' ? 'active' : ''}
+                                                    onClick={() => setPreOrderTime('30m')}
+                                                >
+                                                    30 Mins
+                                                </button>
+                                                <button
+                                                    className={preOrderTime === '1h' ? 'active' : ''}
+                                                    onClick={() => setPreOrderTime('1h')}
+                                                >
+                                                    1 Hour
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="order-details-form">
+                                        <div className="form-group">
+                                            <label>
+                                                <span className="label-icon">📍</span> Delivery Address
+                                                {orderType === 'Now' && <span className="required">*</span>}
+                                            </label>
+                                            <textarea
+                                                placeholder={orderType === 'Now' ? "Enter your full address" : "N/A for pickup"}
+                                                value={address}
+                                                onChange={(e) => setAddress(e.target.value)}
+                                                disabled={orderType !== 'Now'}
+                                                className="premium-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>
+                                                <span className="label-icon">📝</span> Special Instructions (Optional)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="Example: Extra cream, Zero egg, etc."
+                                                value={instructions}
+                                                onChange={(e) => setInstructions(e.target.value)}
+                                                className="premium-input"
+                                            />
                                         </div>
                                     </div>
-                                ))
+                                </div>
                             )}
                         </div>
-
-                        {cart.length > 0 && (
-                            <div className="order-options">
-                                <h4 className="option-title">How would you like to receive?</h4>
-                                <div className="type-toggle">
-                                    <button
-                                        className={orderType === 'Now' ? 'active' : ''}
-                                        onClick={() => setOrderType('Now')}
-                                    >
-                                        Order Now (Delivery)
-                                    </button>
-                                    <button
-                                        className={orderType === 'Pre-Order' ? 'active' : ''}
-                                        onClick={() => setOrderType('Pre-Order')}
-                                    >
-                                        Pre-order Pickup
-                                    </button>
-                                </div>
-
-                                {orderType === 'Pre-Order' && (
-                                    <div className="time-selector">
-                                        <span>Pick up in:</span>
-                                        <div className="time-btns">
-                                            <button
-                                                className={preOrderTime === '30m' ? 'active' : ''}
-                                                onClick={() => setPreOrderTime('30m')}
-                                            >
-                                                30 Mins
-                                            </button>
-                                            <button
-                                                className={preOrderTime === '1h' ? 'active' : ''}
-                                                onClick={() => setPreOrderTime('1h')}
-                                            >
-                                                1 Hour
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="order-details-form">
-                                    <div className="form-group">
-                                        <label>
-                                            <span className="label-icon">📍</span> Delivery Address
-                                            {orderType === 'Now' && <span className="required">*</span>}
-                                        </label>
-                                        <textarea
-                                            placeholder={orderType === 'Now' ? "Enter your full address" : "N/A for pickup"}
-                                            value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            disabled={orderType !== 'Now'}
-                                            className="premium-input"
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label>
-                                            <span className="label-icon">📝</span> Special Instructions (Optional)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Example: Extra cream, Zero egg, etc."
-                                            value={instructions}
-                                            onChange={(e) => setInstructions(e.target.value)}
-                                            className="premium-input"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {cart.length > 0 && (
                             <div className="order-summary">

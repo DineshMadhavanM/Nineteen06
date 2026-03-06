@@ -153,7 +153,13 @@ function App() {
         onCartClick={() => setIsOrderSystemOpen(true)}
         onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         onMenuClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
-        onProfileClick={() => setIsProfileOpen(true)}
+        onProfileClick={() => {
+          if (user) {
+            setIsProfileOpen(true);
+          } else {
+            setIsAuthOpen(true);
+          }
+        }}
       />
 
       <MobileFAB onClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })} />
@@ -165,6 +171,11 @@ function App() {
           onRemove={removeFromCart}
           onUpdateQuantity={updateQuantity}
           onClear={clearCart}
+          onLoginClick={() => {
+            setIsOrderSystemOpen(false);
+            setIsAuthOpen(true);
+          }}
+          isLoggedIn={!!user}
         />
       )}
 
