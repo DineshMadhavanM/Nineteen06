@@ -274,7 +274,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 <table className="admin-table">
                                     <thead>
                                         <tr>
-                                            <th>ID & Customer</th>
+                                            <th>ID & Name</th>
+                                            <th>Contact</th>
                                             <th>Total</th>
                                             <th>Details</th>
                                             <th>Status</th>
@@ -285,7 +286,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             <tr key={order._id} style={{ opacity: 0.7 }}>
                                                 <td>
                                                     <span style={{ fontSize: '0.7rem', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
-                                                    {order.customerName}
+                                                    <strong>{order.customerName}</strong>
+                                                </td>
+                                                <td>
+                                                    <span style={{ fontSize: '0.85rem' }}>{order.customerPhone || '-'}</span><br />
+                                                    <span style={{ fontSize: '0.8rem' }}>{order.address}</span>
                                                 </td>
                                                 <td>₹{order.totalAmount}</td>
                                                 <td>
