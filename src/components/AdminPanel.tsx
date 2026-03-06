@@ -173,11 +173,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 <tbody>
                                     {users.map(user => (
                                         <tr key={user._id}>
-                                            <td>{user.username || '-'}</td>
-                                            <td>{user.email}</td>
-                                            <td>{user.phone || '-'}</td>
-                                            <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                                            <td>
+                                            <td data-label="Name">{user.username || '-'}</td>
+                                            <td data-label="Email">{user.email}</td>
+                                            <td data-label="Phone">{user.phone || '-'}</td>
+                                            <td data-label="Joined">{new Date(user.createdAt).toLocaleDateString()}</td>
+                                            <td data-label="Loyalty Progress">
                                                 <div className="admin-cakes-grid">
                                                     {(user.loyaltyCakes || Array(9).fill(false)).map((isMarked, idx) => (
                                                         <span
@@ -210,19 +210,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 <tbody>
                                     {orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled').map(order => (
                                         <tr key={order._id}>
-                                            <td>
+                                            <td data-label="Customer">
                                                 <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
                                                 <strong>{order.customerName}</strong><br />
                                                 <span style={{ fontSize: '0.8rem' }}>{order.customerEmail}</span>
                                             </td>
-                                            <td>{order.customerPhone || '-'}<br />{order.address}</td>
-                                            <td>
+                                            <td data-label="Contact">{order.customerPhone || '-'}<br />{order.address}</td>
+                                            <td data-label="Details">
                                                 <div style={{ fontSize: '0.9rem' }}>
                                                     {order.items.map((i) => `${i.name} x${i.quantity}`).join(', ')}
                                                 </div>
                                                 {order.instructions && <div style={{ color: 'var(--caramel)', fontSize: '0.8rem', marginTop: '0.4rem' }}>Note: {order.instructions}</div>}
                                             </td>
-                                            <td>
+                                            <td data-label="Status / Action">
                                                 {order.status === 'Pending' ? (
                                                     <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem' }}>
                                                         <input
@@ -284,21 +284,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                     <tbody>
                                         {orders.filter(o => o.status === 'Completed' || o.status === 'Cancelled').map(order => (
                                             <tr key={order._id} style={{ opacity: 0.7 }}>
-                                                <td>
+                                                <td data-label="ID & Name">
                                                     <span style={{ fontSize: '0.7rem', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
                                                     <strong>{order.customerName}</strong>
                                                 </td>
-                                                <td>
+                                                <td data-label="Contact">
                                                     <span style={{ fontSize: '0.85rem' }}>{order.customerPhone || '-'}</span><br />
                                                     <span style={{ fontSize: '0.8rem' }}>{order.address}</span>
                                                 </td>
-                                                <td>₹{order.totalAmount}</td>
-                                                <td>
+                                                <td data-label="Total">₹{order.totalAmount}</td>
+                                                <td data-label="Details">
                                                     <div style={{ fontSize: '0.8rem' }}>
                                                         {order.items.map((i) => i.name).join(', ')}
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <td data-label="Status">
                                                     <span className={`status-badge ${order.status.toLowerCase()}`}>
                                                         {order.status}
                                                     </span>
