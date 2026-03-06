@@ -240,16 +240,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                    <div className="status-action-cell" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                                         <span className={`status-badge ${order.status.toLowerCase()}`}>
                                                             {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
                                                         </span>
                                                         <button
-                                                            className="tab-btn active"
-                                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: '#2ecc71', borderColor: '#2ecc71', color: 'white' }}
+                                                            className="btn-complete-order"
+                                                            style={{
+                                                                padding: '0.5rem 0.8rem',
+                                                                fontSize: '0.75rem',
+                                                                background: '#27ae60',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: 'bold',
+                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                            }}
                                                             onClick={() => handleCompleteOrder(order._id)}
                                                         >
-                                                            Mark Delivered
+                                                            Mark as Completed
                                                         </button>
                                                     </div>
                                                 )}
