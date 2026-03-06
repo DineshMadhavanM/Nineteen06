@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false
+    },
+    loyaltyCakes: {
+        type: [Boolean],
+        default: [false, false, false, false, false, false, false, false, false]
     }
 }, { timestamps: true });
 

@@ -38,7 +38,8 @@ router.post('/signup', async (req, res) => {
                 username: user.username,
                 phone: user.phone,
                 city: user.city,
-                isAdmin: isAdminEmail(user.email)
+                isAdmin: isAdminEmail(user.email),
+                loyaltyCakes: user.loyaltyCakes
             }
         });
     } catch (err) {
@@ -70,7 +71,8 @@ router.post('/login', async (req, res) => {
                 username: user.username,
                 phone: user.phone,
                 city: user.city,
-                isAdmin: isAdminEmail(user.email)
+                isAdmin: isAdminEmail(user.email),
+                loyaltyCakes: user.loyaltyCakes
             }
         });
     } catch (err) {
@@ -102,7 +104,8 @@ router.get('/me', auth, async (req, res) => {
             username: user.username,
             phone: user.phone,
             city: user.city,
-            isAdmin: isAdminEmail(user.email)
+            isAdmin: isAdminEmail(user.email),
+            loyaltyCakes: user.loyaltyCakes
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -124,7 +127,8 @@ router.put('/profile', auth, async (req, res) => {
             username: user.username,
             phone: user.phone,
             city: user.city,
-            isAdmin: isAdminEmail(user.email)
+            isAdmin: isAdminEmail(user.email),
+            loyaltyCakes: user.loyaltyCakes
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -143,6 +147,38 @@ router.get('/admin/users', auth, async (req, res) => {
         }
         const users = await User.find().select('-password').sort({ createdAt: -1 });
         res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── Admin: Toggle User Loyalty Cake ─────────────────────────────────────────
+console.log('Registering PUT /admin/users/:id/loyalty');
+router.put('/admin/users/:id/loyalty', auth, async (req, res) => {
+    console.log(`loyalty request received for user ${req.params.id}`);
+    try {
+        const currentUser = await User.findById(req.user.id);
+        const isAdmin = currentUser ? isAdminEmail(currentUser.email) : false;
+        if (!currentUser || !isAdmin) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const { cakeIndex } = req.body;
+        if (cakeIndex === undefined || cakeIndex < 0 || cakeIndex > 8) {
+            return res.status(400).json({ message: 'Invalid cake index' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Toggle the cake state
+        const updatedLoyalty = [...user.loyaltyCakes];
+        updatedLoyalty[cakeIndex] = !updatedLoyalty[cakeIndex];
+
+        user.loyaltyCakes = updatedLoyalty;
+        await user.save();
+
+        res.json({ loyaltyCakes: user.loyaltyCakes });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

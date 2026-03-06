@@ -11,13 +11,21 @@ import { OrderFlow } from './components/OrderFlow';
 import { Auth } from './components/Auth';
 import { Profile } from './components/Profile';
 import { AdminPanel } from './components/AdminPanel';
+import { LoyaltyCard } from './components/LoyaltyCard';
 import type { MenuItem, CartItem } from './data/menu';
+
+interface User {
+  email: string;
+  username?: string;
+  phone?: string;
+  city?: string;
+  isAdmin?: boolean;
+  loyaltyCakes?: boolean[];
+}
 
 // Admin email list — must match server/routes/auth.cjs
 const ADMIN_EMAILS = ['kit27.ad17@gmail.com', 'nineteen06.in@gmail.com'];
 const isAdminEmail = (email: string) => ADMIN_EMAILS.includes(email?.trim().toLowerCase());
-
-
 
 function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -25,12 +33,12 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [notification, setNotification] = useState<{ message: string, type: 'info' | 'success' } | null>(null);
 
   // Helper to enrich user with computed isAdmin from email
-  const enrichUser = (u: any) => {
-    if (!u) return null;
+  const enrichUser = (u: User): User => {
+    if (!u) return u;
     const isAdmin = isAdminEmail(u.email);
     console.log(`Enriching user: ${u.email}, isAdmin computed: ${isAdmin}`);
     return { ...u, isAdmin };
@@ -126,6 +134,15 @@ function App() {
           const menuSection = document.getElementById('menu');
           menuSection?.scrollIntoView({ behavior: 'smooth' });
         }} />
+
+        {user && (
+          <LoyaltyCard
+            username={user.username}
+            email={user.email}
+            loyaltyCakes={user.loyaltyCakes}
+          />
+        )}
+
         <Trending onAddToCart={addToCart} />
         <Menu onAddToCart={addToCart} />
         <WhyChooseUs />
@@ -177,6 +194,5 @@ function App() {
     </div>
   );
 }
-
 
 export default App;

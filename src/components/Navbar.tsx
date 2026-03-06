@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 
+interface User {
+    email: string;
+    username?: string;
+    phone?: string;
+    city?: string;
+    isAdmin?: boolean;
+    loyaltyCakes?: boolean[];
+}
+
 interface NavbarProps {
     cartCount: number;
     onCartClick: () => void;
     onLoginClick: () => void;
     onProfileClick: () => void;
     onAdminClick: () => void;
-    user: any;
+    user: User | null;
     onLogout: () => void;
 }
 

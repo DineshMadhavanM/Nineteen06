@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Profile.css';
 import logo from '../assets/images/Logo.png';
+import { LoyaltyCard } from './LoyaltyCard';
 
 interface ProfileProps {
     user: {
@@ -9,10 +10,18 @@ interface ProfileProps {
         phone?: string;
         city?: string;
         isAdmin?: boolean;
+        loyaltyCakes?: boolean[];
     };
     onClose: () => void;
     onLogout: () => void;
-    onUpdate: (updatedUser: any) => void;
+    onUpdate: (updatedUser: {
+        email: string;
+        username?: string;
+        phone?: string;
+        city?: string;
+        isAdmin?: boolean;
+        loyaltyCakes?: boolean[];
+    }) => void;
 }
 
 export const Profile: React.FC<ProfileProps> = ({ user, onClose, onLogout, onUpdate }) => {
@@ -46,7 +55,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onLogout, onUpd
             } else {
                 setError(data.message || 'Update failed');
             }
-        } catch (err) {
+        } catch {
             setError('Connection error');
         } finally {
             setLoading(false);
@@ -69,6 +78,15 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onLogout, onUpd
                 </div>
 
                 <div className="profile-content">
+                    {/* Loyalty Card Section */}
+                    {!isEditing && (
+                        <LoyaltyCard
+                            username={user.username}
+                            email={user.email}
+                            loyaltyCakes={user.loyaltyCakes}
+                        />
+                    )}
+
                     {error && <p className="profile-error">{error}</p>}
 
                     <div className="profile-details">

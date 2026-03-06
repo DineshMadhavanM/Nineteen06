@@ -123,3 +123,44 @@
 .admin-error {
     color: #e74c3c;
 }
+
+.admin-cakes-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    max-width: 150px;
+}
+
+.admin-cake-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    filter: grayscale(100%);
+    transition: all 0.2s ease;
+    opacity: 0.3;
+    user-select: none;
+}
+
+.admin-cake-icon:hover {
+    transform: scale(1.2);
+    opacity: 0.6;
+}
+
+.admin-cake-icon.active {
+    filter: grayscale(0%) brightness(1.2);
+    /* Instead of just green, let's make it vibrant as requested but specifically green/active */
+    color: #2ecc71;
+    /* Fallback or indicator */
+    opacity: 1;
+    filter: none;
+}
+
+.admin-cake-icon.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #2ecc71;
+    border-radius: 2px;
+}

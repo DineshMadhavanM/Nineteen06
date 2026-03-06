@@ -12,6 +12,7 @@ interface UserData {
     phone?: string;
     city?: string;
     isAdmin: boolean;
+    loyaltyCakes?: boolean[];
     createdAt: string;
 }
 
@@ -36,10 +37,42 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             } else {
                 setError(data.message || 'Failed to fetch users');
             }
-        } catch (err) {
+        } catch {
             setError('Server connection error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCakeToggle = async (userId: string, cakeIndex: number) => {
+        console.log(`Toggling cake ${cakeIndex} for user ${userId}`);
+        try {
+            const token = localStorage.getItem('token');
+            const url = `/api/auth/admin/users/${userId}/loyalty`;
+            console.log(`Fetching: ${url}`);
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token || ''
+                },
+                body: JSON.stringify({ cakeIndex })
+            });
+            if (response.ok) {
+                // Update local state
+                const updatedUsers = users.map(u => {
+                    if (u._id === userId) {
+                        const loyalty = u.loyaltyCakes || [false, false, false, false, false, false, false, false, false];
+                        const newLoyalty = [...loyalty];
+                        newLoyalty[cakeIndex] = !newLoyalty[cakeIndex];
+                        return { ...u, loyaltyCakes: newLoyalty };
+                    }
+                    return u;
+                });
+                setUsers(updatedUsers);
+            }
+        } catch (err) {
+            console.error('Failed to toggle cake:', err);
         }
     };
 
@@ -72,6 +105,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>City</th>
+                                        <th>Cakes</th>
                                         <th>Joined</th>
                                     </tr>
                                 </thead>
@@ -82,6 +116,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             <td>{user.email}</td>
                                             <td>{user.phone || '-'}</td>
                                             <td>{user.city || '-'}</td>
+                                            <td>
+                                                <div className="admin-cakes-grid">
+                                                    {(user.loyaltyCakes || Array(9).fill(false)).map((isMarked: boolean, index: number) => (
+                                                        <span
+                                                            key={index}
+                                                            className={`admin-cake-icon ${isMarked ? 'active' : ''}`}
+                                                            onClick={() => handleCakeToggle(user._id, index)}
+                                                            title={`Cake ${index + 1}`}
+                                                        >
+                                                            🍰
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </td>
                                             <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                                         </tr>
                                     ))}

@@ -1,0 +1,124 @@
+.loyalty-card-section {
+    padding: 4rem 2rem;
+    display: flex;
+    justify-content: center;
+    background: var(--cream);
+}
+
+.loyalty-card {
+    background: #c3e6cb;
+    /* Light green like the photo */
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: #2c3e50;
+    font-family: 'serif', var(--font-body);
+    width: 100%;
+    max-width: 500px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.loyalty-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.loyalty-title {
+    font-size: 2.22rem;
+    font-weight: 800;
+    font-style: italic;
+    margin-bottom: 0.2rem;
+    color: #1b4d3e;
+}
+
+.loyalty-offer {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1b4d3e;
+}
+
+.loyalty-user-info {
+    background: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 30px;
+    margin-bottom: 2rem;
+    display: inline-block;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    border-bottom: 2px solid #000;
+}
+
+.loyalty-label {
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+.loyalty-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.loyalty-slot {
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px dashed rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.cake-slice {
+    font-size: 1.8rem;
+    filter: grayscale(100%);
+    opacity: 0.3;
+}
+
+.loyalty-slot.active .cake-slice {
+    filter: none;
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.loyalty-slot.active {
+    background: white;
+    border-style: solid;
+    border-color: #2ecc71;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2);
+}
+
+.slot-label {
+    position: absolute;
+    top: -18px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+    color: #1b4d3e;
+    transform: rotate(-15deg);
+    background: #f1c40f;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+.slot-label.free {
+    top: auto;
+    bottom: -18px;
+    right: -10px;
+    font-size: 0.9rem;
+    background: #e74c3c;
+    color: white;
+    transform: rotate(5deg);
+}
+
+.loyalty-disclaimer {
+    font-size: 0.8rem;
+    text-align: center;
+    opacity: 0.8;
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: #1b4d3e;
+}

@@ -4,7 +4,14 @@ import logo from '../assets/images/Logo.png';
 
 interface AuthProps {
     onClose: () => void;
-    onSuccess: (user: any) => void;
+    onSuccess: (user: {
+        email: string;
+        username?: string;
+        phone?: string;
+        city?: string;
+        isAdmin?: boolean;
+        loyaltyCakes?: boolean[];
+    }) => void;
 }
 
 export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
@@ -42,7 +49,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
             } else {
                 setError(data.message || 'Authentication failed');
             }
-        } catch (err) {
+        } catch {
             setError('Server connection error. Is the backend running?');
         } finally {
             setLoading(false);
