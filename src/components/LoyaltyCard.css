@@ -119,3 +119,50 @@
     font-style: italic;
     color: #1b4d3e;
 }
+
+@media (max-width: 480px) {
+    .loyalty-card {
+        padding: 1rem;
+    }
+
+    .loyalty-title {
+        font-size: 1.6rem;
+    }
+
+    .loyalty-offer {
+        font-size: 1rem;
+    }
+
+    .loyalty-user-info {
+        padding: 0.5rem 1rem;
+        margin-bottom: 1.2rem;
+        font-size: 0.9rem;
+        display: block;
+        text-align: center;
+    }
+
+    .loyalty-grid {
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .cake-slice {
+        font-size: 1.4rem;
+    }
+
+    .slot-label {
+        font-size: 0.6rem;
+        top: -15px;
+    }
+
+    .slot-label.free {
+        font-size: 0.7rem;
+        bottom: -15px;
+        right: -5px;
+    }
+
+    .loyalty-disclaimer {
+        font-size: 0.7rem;
+        margin-top: 1rem;
+    }
+}
