@@ -27,8 +27,8 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        # IMPORTANT: Ensure this matches your actual backend service name
-        destination: https://nineteen06-backend.onrender.com/api/*
+        # Updated to match your successful backend deployment URL
+        destination: https://nineteen06.onrender.com/api/*
       - type: rewrite
         source: /*
         destination: /index.html
