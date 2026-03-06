@@ -155,6 +155,9 @@ function App() {
         onCartClick={() => setIsOrderSystemOpen(true)}
         onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         onMenuClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
+        onAdminClick={() => setIsAdminOpen(true)}
+        onMessageClick={() => setIsMessageOpen(true)}
+        isAdmin={!!user?.isAdmin}
         onProfileClick={() => {
           if (user) {
             setIsProfileOpen(true);

@@ -86,8 +86,48 @@
 .admin-table-container {
     background: var(--white);
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 768px) {
+    .admin-modal {
+        height: 95vh;
+        max-width: 98%;
+    }
+
+    .admin-header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .admin-tabs {
+        margin-left: 0;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .admin-content {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+    }
+
+    .admin-table td,
+    .admin-table th {
+        padding: 0.8rem 0.5rem;
+        font-size: 0.85rem;
+    }
 }
 
 .admin-table {
