@@ -203,6 +203,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                     <tr>
                                         <th>ID & Customer</th>
                                         <th>Contact</th>
+                                        <th>Total</th>
                                         <th>Details</th>
                                         <th>Status / Action</th>
                                     </tr>
