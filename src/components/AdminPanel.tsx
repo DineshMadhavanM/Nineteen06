@@ -82,7 +82,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 alert('Order confirmed and message sent to customer!');
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                alert('Confirm failed: ' + (errorData.message || response.statusText));
+                alert(`Confirm failed (Status: ${response.status}): ` + (errorData.message || response.statusText));
             }
         } catch (err) {
             alert('Confirm request error');
@@ -104,7 +104,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                 alert('Order marked as Completed and moved to history!');
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                alert('Completion failed: ' + (errorData.message || response.statusText));
+                alert(`Completion failed (Status: ${response.status}): ` + (errorData.message || response.statusText));
             }
         } catch (err) {
             alert('Completion request error');
