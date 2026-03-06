@@ -3,8 +3,8 @@
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding-top: 140px;
-    padding-bottom: 100px;
+    padding-top: 100px;
+    padding-bottom: 80px;
     background-color: var(--pistachio);
     overflow: hidden;
 }
@@ -30,11 +30,12 @@
 }
 
 .hero-main-title {
-    font-size: clamp(5rem, 12vw, 10rem);
-    line-height: 0.8;
+    font-size: clamp(3.5rem, 15vw, 8rem);
+    line-height: 0.9;
     color: var(--chocolate);
     margin-bottom: 1rem;
     font-weight: 800;
+    word-break: break-word;
     animation: fadeInUp 0.8s ease-out 0.2s backwards;
 }
 
@@ -68,18 +69,29 @@
 
 .hero-btns {
     display: flex;
-    gap: 1.5rem;
-    margin-bottom: 4rem;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     animation: fadeInUp 0.8s ease-out 0.8s backwards;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 0 1 auto;
+    min-width: 160px;
+    text-align: center;
+    white-space: nowrap;
+    padding: 1.2rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: var(--transition);
 }
 
 .btn-primary {
     background: var(--chocolate);
     color: var(--white);
-    padding: 1.2rem 2.5rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1rem;
     box-shadow: var(--shadow-medium);
 }
 
@@ -92,10 +104,6 @@
 .btn-secondary {
     background: var(--cream);
     color: var(--chocolate);
-    padding: 1.2rem 2.5rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1rem;
     border: 1px solid rgba(47, 30, 27, 0.1);
 }
 
@@ -263,10 +271,14 @@
     }
 }
 
-@media (max-width: 992px) {
+@media (max-width: 768px) {
+    .hero {
+        padding-top: 80px;
+    }
+
     .hero-container {
         grid-template-columns: 1fr;
-        gap: 5rem;
+        gap: 3rem;
         text-align: center;
     }
 
@@ -276,26 +288,56 @@
         align-items: center;
     }
 
+    .hero-main-title {
+        font-size: clamp(3rem, 18vw, 5rem);
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-sub-brand {
+        font-size: 1rem;
+        letter-spacing: 0.1em;
+    }
+
     .hero-description {
-        margin-left: auto;
-        margin-right: auto;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
 
     .hero-btns {
+        width: 100%;
         justify-content: center;
+        gap: 0.8rem;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem 1.5rem;
+        font-size: 0.9rem;
     }
 
     .hero-stats {
         justify-content: center;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
     }
 
     .hero-image-container {
-        max-width: 500px;
+        width: 100%;
+        max-width: 400px;
         margin: 0 auto;
     }
 
     .floating-card {
-        left: 10px;
-        bottom: -20px;
+        padding: 0.8rem 1rem;
+        left: 0;
+        bottom: -10px;
+        transform: scale(0.8);
     }
 }
