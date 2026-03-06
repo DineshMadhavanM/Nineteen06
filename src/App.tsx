@@ -140,14 +140,6 @@ function App() {
           menuSection?.scrollIntoView({ behavior: 'smooth' });
         }} />
 
-        {user && (
-          <LoyaltyCard
-            username={user.username}
-            email={user.email}
-            loyaltyCakes={user.loyaltyCakes}
-          />
-        )}
-
         <Trending onAddToCart={addToCart} />
         <Menu onAddToCart={addToCart} />
         <WhyChooseUs />
