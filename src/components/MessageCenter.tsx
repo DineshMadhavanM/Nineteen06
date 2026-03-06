@@ -56,10 +56,16 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({ onClose }) => {
                         </div>
                     ) : (
                         <div className="order-list">
-                            {orders.map(order => (
+                            {orders.some(o => o.status !== 'Completed' && o.status !== 'Cancelled') && (
+                                <h3 className="serif" style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--chocolate)' }}>Active Orders</h3>
+                            )}
+                            {orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled').map(order => (
                                 <div key={order._id} className={`order-card status-${order.status.toLowerCase()}`}>
                                     <div className="order-card-header">
-                                        <span className="order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span>
+                                            <span className="order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                        </div>
                                         <span className="order-status-badge">{order.status}</span>
                                     </div>
                                     <div className="order-items">
@@ -75,6 +81,27 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({ onClose }) => {
                                             <p className="delivery-info">Deliver in <strong>{order.deliveryTime}</strong></p>
                                         </div>
                                     )}
+                                </div>
+                            ))}
+
+                            {orders.some(o => o.status === 'Completed' || o.status === 'Cancelled') && (
+                                <h3 className="serif" style={{ fontSize: '1.1rem', margin: '2rem 0 1rem', color: 'var(--chocolate)', opacity: 0.6 }}>Order History</h3>
+                            )}
+                            {orders.filter(o => o.status === 'Completed' || o.status === 'Cancelled').map(order => (
+                                <div key={order._id} className={`order-card status-${order.status.toLowerCase()}`} style={{ opacity: 0.8 }}>
+                                    <div className="order-card-header">
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span>
+                                            <span className="order-date" style={{ fontSize: '0.75rem' }}>{new Date(order.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <span className="order-status-badge" style={{ fontSize: '0.65rem' }}>{order.status}</span>
+                                    </div>
+                                    <div className="order-items" style={{ fontSize: '0.85rem' }}>
+                                        {order.items.map((item, idx) => (
+                                            <span key={idx}>{item.name} x {item.quantity}{idx < order.items.length - 1 ? ', ' : ''}</span>
+                                        ))}
+                                    </div>
+                                    <div className="order-total" style={{ fontSize: '0.9rem' }}>Total: ₹{order.totalAmount}</div>
                                 </div>
                             ))}
                         </div>

@@ -86,6 +86,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
+    const handleCompleteOrder = async (orderId: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/orders/${orderId}/complete`, {
+                method: 'PUT',
+                headers: {
+                    'x-auth-token': token || ''
+                }
+            });
+
+            if (response.ok) {
+                fetchData();
+                alert('Order marked as Completed and moved to history!');
+            }
+        } catch (err) {
+            alert('Update failed');
+        }
+    };
+
     const handleCakeToggle = async (userId: string, cakeIndex: number) => {
         try {
             const token = localStorage.getItem('token');
@@ -178,19 +197,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                         </div>
                     ) : (
                         <div className="orders-container">
+                            <h3 className="serif" style={{ marginBottom: '1rem', color: 'var(--chocolate)' }}>Active Orders</h3>
                             <table className="admin-table">
                                 <thead>
                                     <tr>
-                                        <th>Customer</th>
+                                        <th>ID & Customer</th>
                                         <th>Contact</th>
                                         <th>Details</th>
-                                        <th>Status/Action</th>
+                                        <th>Status / Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders.map(order => (
+                                    {orders.filter(o => o.status !== 'Completed' && o.status !== 'Cancelled').map(order => (
                                         <tr key={order._id}>
                                             <td>
+                                                <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
                                                 <strong>{order.customerName}</strong><br />
                                                 <span style={{ fontSize: '0.8rem' }}>{order.customerEmail}</span>
                                             </td>
@@ -219,15 +240,59 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                                        {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
-                                                    </span>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                        <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                                            {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
+                                                        </span>
+                                                        <button
+                                                            className="tab-btn active"
+                                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', background: '#2ecc71', borderColor: '#2ecc71', color: 'white' }}
+                                                            onClick={() => handleCompleteOrder(order._id)}
+                                                        >
+                                                            Mark Delivered
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
+
+                            <h3 className="serif" style={{ margin: '2rem 0 1rem', color: 'var(--chocolate)', opacity: 0.6 }}>Order History</h3>
+                            <div className="admin-table-container">
+                                <table className="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID & Customer</th>
+                                            <th>Total</th>
+                                            <th>Details</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.filter(o => o.status === 'Completed' || o.status === 'Cancelled').map(order => (
+                                            <tr key={order._id} style={{ opacity: 0.7 }}>
+                                                <td>
+                                                    <span style={{ fontSize: '0.7rem', color: 'var(--caramel)' }}>#{order._id.slice(-6).toUpperCase()}</span><br />
+                                                    {order.customerName}
+                                                </td>
+                                                <td>₹{order.totalAmount}</td>
+                                                <td>
+                                                    <div style={{ fontSize: '0.8rem' }}>
+                                                        {order.items.map((i) => i.name).join(', ')}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
                 </div>

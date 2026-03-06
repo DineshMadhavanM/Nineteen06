@@ -99,4 +99,29 @@ router.put('/:id/confirm', auth, async (req, res) => {
     }
 });
 
+// ─── Admin: Complete Order (Delivery Completed) ─────────────────────────────
+router.put('/:id/complete', auth, async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || !isAdminEmail(currentUser.email)) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    status: 'Completed'
+                }
+            },
+            { new: true }
+        );
+
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+        res.json(order);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

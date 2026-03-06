@@ -226,6 +226,11 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                             </div>
                         </div>
                         <h3 className="status-title">{status}</h3>
+                        {placedOrder && (
+                            <div className="order-id-badge" style={{ background: 'rgba(47, 30, 27, 0.05)', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 700, margin: '1rem 0', color: 'var(--caramel)' }}>
+                                Order ID: #{placedOrder._id.slice(-6).toUpperCase()}
+                            </div>
+                        )}
                         <p className="status-desc">
                             {status === 'Order Placed' && 'The bakery has received your order. Waiting for admin confirmation.'}
                             {status === 'Confirmed' && (
