@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
     loyaltyCakes: {
         type: [Boolean],
         default: [false, false, false, false, false, false, false, false, false]
+    },
+    fcmTokens: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true });
 

@@ -12,6 +12,22 @@ if (fs.existsSync(envPath)) {
 
 const mongoose = require('mongoose');
 const cors = require('cors');
+
+// Initialize Firebase Admin
+const admin = require('firebase-admin');
+const serviceAccountPath = path.resolve(__dirname, './firebase-service-account.json');
+if (fs.existsSync(serviceAccountPath)) {
+    const serviceAccount = require(serviceAccountPath);
+    if (!admin.apps.length) {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        console.log('Firebase Admin initialized successfully in index.cjs.');
+    }
+} else {
+    console.warn('WARNING: firebase-service-account.json not found. Push notifications will be disabled.');
+}
+
 const authRoutes = require('./routes/auth.cjs');
 const orderRoutes = require('./routes/orders.cjs');
 
@@ -46,6 +62,11 @@ mongoose.connect(MONGO_URI)
         // Do not exit process on MongoDB connection failure,
         // allow server to continue running for health checks.
     });
+
+app.use((req, res, next) => {
+    req.firebaseAdmin = admin;
+    next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);

@@ -15,6 +15,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
 import MobileFAB from './components/MobileFAB';
+import { requestFirebaseNotificationPermission } from './lib/firebase';
 import type { MenuItem, CartItem } from './data/menu';
 import { apiUrl } from './lib/api';
 
@@ -62,6 +63,8 @@ function App() {
           if (response.ok) {
             const data = await response.json();
             setUser(enrichUser(data));
+            // Trigger Firebase Push Notification Permission on auto-login
+            requestFirebaseNotificationPermission();
           } else {
             console.error('Failed to fetch user:', response.status);
             localStorage.removeItem('token');
@@ -192,6 +195,9 @@ function App() {
             setUser(enrichUser(userData));
             setNotification({ message: `Welcome back, ${userData.username || userData.email}!`, type: 'success' });
             setTimeout(() => setNotification(null), 3000);
+
+            // Trigger Firebase Push Notification Permission on manual login
+            requestFirebaseNotificationPermission();
           }}
         />
       )}

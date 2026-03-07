@@ -41,6 +41,29 @@ router.post('/', auth, async (req, res) => {
         });
 
         const savedOrder = await newOrder.save();
+
+        // Send Push Notification to Admins
+        if (req.firebaseAdmin) {
+            try {
+                const admins = await User.find({ email: { $in: ADMIN_EMAILS } });
+                const adminTokens = admins.flatMap(admin => admin.fcmTokens).filter(Boolean);
+
+                if (adminTokens.length > 0) {
+                    const message = {
+                        notification: {
+                            title: '🌟 New Order Received!',
+                            body: `${user.username || 'A customer'} placed an order for ₹${totalAmount}.`,
+                        },
+                        tokens: [...new Set(adminTokens)], // Remove duplicates
+                    };
+                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`Sent new order notification to ${adminTokens.length} admin devices.`);
+                }
+            } catch (notifyErr) {
+                console.error('Failed to send admin push notification:', notifyErr);
+            }
+        }
+
         res.json(savedOrder);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -93,6 +116,27 @@ router.put('/:id/confirm', auth, async (req, res) => {
         );
 
         if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        // Send Push Notification to Customer
+        if (req.firebaseAdmin) {
+            try {
+                const customer = await User.findById(order.userId);
+                if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    const message = {
+                        notification: {
+                            title: '✅ Order Confirmed!',
+                            body: `Your order is confirmed and will be delivered around ${deliveryTime}.`,
+                        },
+                        tokens: [...new Set(customer.fcmTokens)]
+                    };
+                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`Sent confirmation notification to ${customer.fcmTokens.length} devices for user ${customer.email}`);
+                }
+            } catch (notifyErr) {
+                console.error('Failed to send customer push notification:', notifyErr);
+            }
+        }
+
         res.json(order);
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -135,6 +135,26 @@ router.put('/profile', auth, async (req, res) => {
     }
 });
 
+// ─── Save Notification Token ──────────────────────────────────────────────────
+router.post('/fcm-token', auth, async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+        if (!fcmToken) return res.status(400).json({ message: 'No FCM token provided' });
+
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        if (!user.fcmTokens.includes(fcmToken)) {
+            user.fcmTokens.push(fcmToken);
+            await user.save();
+        }
+
+        res.json({ message: 'Token saved successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ─── Admin: Get All Users ─────────────────────────────────────────────────────
 router.get('/admin/users', auth, async (req, res) => {
     try {

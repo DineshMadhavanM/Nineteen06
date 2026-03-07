@@ -7,3 +7,4 @@ dist/
 tmp/
 .temp/
 C:\Users\saran\.gemini\antigravity\brain\
+server/firebase-service-account.json
