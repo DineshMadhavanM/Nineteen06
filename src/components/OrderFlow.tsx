@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './OrderFlow.css';
 import type { CartItem } from '../data/menu';
+import { apiUrl } from '../lib/api';
 
 interface OrderFlowProps {
     cart: CartItem[];
@@ -44,7 +45,7 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/orders', {
+            const response = await fetch(apiUrl('/api/orders'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

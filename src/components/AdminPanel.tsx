@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPanel.css';
+import { apiUrl } from '../lib/api';
 
 interface AdminPanelProps {
     onClose: () => void;
@@ -46,8 +47,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         try {
             const token = localStorage.getItem('token');
             const [usersRes, ordersRes] = await Promise.all([
-                fetch('/api/auth/admin/users', { headers: { 'x-auth-token': token || '' } }),
-                fetch('/api/orders/admin', { headers: { 'x-auth-token': token || '' } })
+                fetch(apiUrl('/api/auth/admin/users'), { headers: { 'x-auth-token': token || '' } }),
+                fetch(apiUrl('/api/orders/admin'), { headers: { 'x-auth-token': token || '' } })
             ]);
 
             if (usersRes.ok) setUsers(await usersRes.json());
@@ -68,7 +69,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/orders/${orderId}/confirm`, {
+            const response = await fetch(apiUrl(`/api/orders/${orderId}/confirm`), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     const handleCompleteOrder = async (orderId: string) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/orders/${orderId}/complete`, {
+            const response = await fetch(apiUrl(`/api/orders/${orderId}/complete`), {
                 method: 'PUT',
                 headers: {
                     'x-auth-token': token || ''
@@ -118,7 +119,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     const handleCakeToggle = async (userId: string, cakeIndex: number) => {
         try {
             const token = localStorage.getItem('token');
-            const url = `/api/auth/admin/users/${userId}/loyalty`;
+            const url = apiUrl(`/api/auth/admin/users/${userId}/loyalty`);
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {

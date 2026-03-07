@@ -33,11 +33,18 @@ if (!MONGO_URI) {
     process.exit(1);
 }
 
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => res.status(200).send('OK'));
+
 mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB Connected successfully!'))
     .catch(err => {
         console.error('MongoDB Connection Error:', err.message);
-        process.exit(1);
+        // Do not exit process on MongoDB connection failure,
+        // allow server to continue running for health checks.
     });
 
 app.use('/api/auth', authRoutes);
@@ -50,7 +57,7 @@ app.use(express.static(distPath));
 
 // Catch-all route to serve the React app's index.html
 // This MUST be after API routes and static middleware
-app.get('/*path', (req, res) => {
+app.get('*', (req, res) => {
     const indexPath = path.join(distPath, 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
@@ -58,6 +65,3 @@ app.get('/*path', (req, res) => {
         res.status(404).send('Frontend build not found. Please run "npm run build".');
     }
 });
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

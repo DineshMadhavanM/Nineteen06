@@ -16,6 +16,7 @@ import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
 import MobileFAB from './components/MobileFAB';
 import type { MenuItem, CartItem } from './data/menu';
+import { apiUrl } from './lib/api';
 
 interface User {
   email: string;
@@ -54,7 +55,7 @@ function App() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch('/api/auth/me', {
+          const response = await fetch(apiUrl('/api/auth/me'), {
             headers: { 'x-auth-token': token }
           });
 

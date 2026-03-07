@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Profile.css';
 import { LoyaltyCard } from './LoyaltyCard';
+import { apiUrl } from '../lib/api';
 
 interface ProfileProps {
     user: {
@@ -39,7 +40,7 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onLogout, onUpd
         setError('');
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('/api/auth/profile', {
+            const response = await fetch(apiUrl('/api/auth/profile'), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

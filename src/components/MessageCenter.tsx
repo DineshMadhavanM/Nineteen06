@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './MessageCenter.css';
+import { apiUrl } from '../lib/api';
 
 interface MessageCenterProps {
     onClose: () => void;
@@ -22,7 +23,7 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({ onClose }) => {
         const fetchOrders = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('/api/orders/me', {
+                const response = await fetch(apiUrl('/api/orders/me'), {
                     headers: { 'x-auth-token': token || '' }
                 });
                 if (response.ok) {

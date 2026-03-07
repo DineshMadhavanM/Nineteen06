@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Auth.css';
 import logo from '../assets/images/Logo.png';
+import { apiUrl } from '../lib/api';
 
 interface AuthProps {
     onClose: () => void;
@@ -30,7 +31,7 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
         setError('');
 
         try {
-            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+            const endpoint = isLogin ? apiUrl('/api/auth/login') : apiUrl('/api/auth/signup');
             const body = isLogin
                 ? { email, password }
                 : { email, password, username, phone, city };
