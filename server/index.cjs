@@ -61,6 +61,6 @@ app.get('/{*path}', (req, res) => {
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(404).send('Frontend build not found. Please run "npm run build".');
+        res.status(200).send('Backend API is running. Frontend build not found.');
     }
 });
