@@ -15,17 +15,26 @@ const cors = require('cors');
 
 // Initialize Firebase Admin
 const admin = require('firebase-admin');
-const serviceAccountPath = path.resolve(__dirname, './firebase-service-account.json');
-if (fs.existsSync(serviceAccountPath)) {
-    const serviceAccount = require(serviceAccountPath);
+const localServiceAccountPath = path.resolve(__dirname, './firebase-service-account.json');
+const renderSecretPath = '/etc/secrets/firebase-service-account.json';
+
+let serviceAccountPathToUse = null;
+if (fs.existsSync(localServiceAccountPath)) {
+    serviceAccountPathToUse = localServiceAccountPath;
+} else if (fs.existsSync(renderSecretPath)) {
+    serviceAccountPathToUse = renderSecretPath;
+}
+
+if (serviceAccountPathToUse) {
+    const serviceAccount = require(serviceAccountPathToUse);
     if (!admin.apps.length) {
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });
-        console.log('Firebase Admin initialized successfully in index.cjs.');
+        console.log(`Firebase Admin initialized successfully from ${serviceAccountPathToUse}.`);
     }
 } else {
-    console.warn('WARNING: firebase-service-account.json not found. Push notifications will be disabled.');
+    console.warn('WARNING: firebase-service-account.json not found locally or in Render secrets (/etc/secrets). Push notifications will be disabled.');
 }
 
 const authRoutes = require('./routes/auth.cjs');
