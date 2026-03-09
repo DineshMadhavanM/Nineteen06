@@ -4,6 +4,11 @@ const jwt = require('jsonwebtoken');
 const Order = require('../models/Order.cjs');
 const User = require('../models/User.cjs');
 
+router.use((req, res, next) => {
+    console.log(`Orders Router: ${req.method} ${req.url}`);
+    next();
+});
+
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const auth = async (req, res, next) => {
     try {
@@ -163,6 +168,24 @@ router.put('/:id/complete', auth, async (req, res) => {
 
         if (!order) return res.status(404).json({ message: 'Order not found' });
         res.json(order);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── Admin: Delete Order ─────────────────────────────────────────────────────
+console.log('Registering DELETE /api/orders/:id');
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || !isAdminEmail(currentUser.email)) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const order = await Order.findByIdAndDelete(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        res.json({ message: 'Order deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

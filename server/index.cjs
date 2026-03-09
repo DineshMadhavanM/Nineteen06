@@ -73,6 +73,7 @@ mongoose.connect(MONGO_URI)
     });
 
 app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     req.firebaseAdmin = admin;
     next();
 });

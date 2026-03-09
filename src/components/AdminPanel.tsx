@@ -116,6 +116,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
+    const handleDeleteOrder = async (orderId: string) => {
+        if (!window.confirm('Are you sure you want to permanently delete this order? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(apiUrl(`/api/orders/${orderId}`), {
+                method: 'DELETE',
+                headers: {
+                    'x-auth-token': token || ''
+                }
+            });
+
+            if (response.ok) {
+                setOrders(orders.filter(o => o._id !== orderId));
+                alert('Order deleted successfully');
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                alert(`Delete failed: ${errorData.message || response.statusText}`);
+            }
+        } catch (err) {
+            alert('Delete request error');
+        }
+    };
+
     const handleCakeToggle = async (userId: string, cakeIndex: number) => {
         try {
             const token = localStorage.getItem('token');
@@ -298,6 +324,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             <th>Total</th>
                                             <th>Details</th>
                                             <th>Status</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -321,6 +348,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                     <span className={`status-badge ${order.status.toLowerCase()}`}>
                                                         {order.status}
                                                     </span>
+                                                </td>
+                                                <td data-label="Actions">
+                                                    <button
+                                                        className="btn-delete-order"
+                                                        style={{
+                                                            padding: '0.4rem 0.8rem',
+                                                            fontSize: '0.75rem',
+                                                            background: '#e74c3c',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            cursor: 'pointer',
+                                                            fontWeight: 'bold'
+                                                        }}
+                                                        onClick={() => handleDeleteOrder(order._id)}
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}
