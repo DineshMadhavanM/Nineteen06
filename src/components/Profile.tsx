@@ -165,6 +165,46 @@ export const Profile: React.FC<ProfileProps> = ({ user, onClose, onLogout, onUpd
                                     </>
                                 )}
                             </div>
+
+                            {!isEditing && (
+                                <div className="profile-notifications-section">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+                                        <h4 className="serif" style={{ fontSize: '1rem', color: 'var(--chocolate)' }}>Notifications</h4>
+                                        <span className={`notif-status-badge ${(window as any).Notification?.permission || 'default'}`}>
+                                            {(window as any).Notification?.permission === 'granted' ? '✅ Active' :
+                                                (window as any).Notification?.permission === 'denied' ? '🚫 Blocked' : '⏳ Action Needed'}
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        className="btn-enable-notif"
+                                        onClick={async () => {
+                                            const { requestFirebaseNotificationPermission } = await import('../lib/firebase');
+                                            const token = await requestFirebaseNotificationPermission();
+                                            if (token) {
+                                                alert('Notifications enabled successfully! 🔔');
+                                                onClose();
+                                            } else {
+                                                alert('Failed to enable notifications. Please check site settings.');
+                                            }
+                                        }}
+                                        disabled={(window as any).Notification?.permission === 'granted'}
+                                    >
+                                        {(window as any).Notification?.permission === 'granted' ? 'Notifications Enabled' : '🔔 Enable Notifications'}
+                                    </button>
+
+                                    <div className="notif-hint">
+                                        {(window as any).Notification?.permission !== 'granted' && (
+                                            <p>Tap to receive alerts for your <strong>orders</strong> and <strong>loyalty rewards</strong>.</p>
+                                        )}
+                                        {/iPhone|iPad|iPod/i.test(navigator.userAgent) && (
+                                            <p style={{ marginTop: '0.5rem', color: '#d35400' }}>
+                                                <strong>iPhone User?</strong> Must use <strong>Share &gt; Add to Home Screen</strong> first!
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
