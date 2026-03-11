@@ -143,6 +143,36 @@
     color: var(--pistachio);
 }
 
+.menu-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--chocolate);
+    color: var(--pistachio);
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--chocolate);
+}
+
+.qty-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 4px;
+}
+
+.qty-value {
+    font-weight: 700;
+    font-family: var(--font-heading);
+    min-width: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
 .menu-footer-notes {
     margin-top: 4rem;
     text-align: center;

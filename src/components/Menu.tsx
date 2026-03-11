@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import './Menu.css';
 import { menuData } from '../data/menu';
-import type { MenuItem } from '../data/menu';
+import type { MenuItem, CartItem } from '../data/menu';
 
 interface MenuProps {
     onAddToCart: (item: MenuItem) => void;
+    cart: CartItem[];
+    onUpdateQuantity: (id: string, delta: number) => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ onAddToCart }) => {
+const Menu: React.FC<MenuProps> = ({ onAddToCart, cart, onUpdateQuantity }) => {
     const categories = ['All', ...new Set(menuData.map(item => item.category))];
     const [activeCategory, setActiveCategory] = useState('All');
+
+    const getItemQuantity = (itemId: string) => {
+        return cart.find(i => i.id === itemId)?.quantity || 0;
+    };
 
     // Group items by category for the "All" view
     const groupedItems = menuData.reduce((acc, item) => {
@@ -47,17 +53,35 @@ const Menu: React.FC<MenuProps> = ({ onAddToCart }) => {
                                     <div className="category-decoration">☫ ☬ ☫</div>
                                 </div>
                                 <div className="menu-items-list">
-                                    {(groupedItems[category] || []).map(item => (
-                                        <div key={item.id} className="menu-item-wrapper">
-                                            <div className="menu-item-row">
-                                                <span className="item-name">{item.name}</span>
-                                                <span className="dotted-line"></span>
-                                                <span className="item-price">₹{item.price}</span>
-                                                <button className="add-btn-mini" onClick={() => onAddToCart(item)}>+</button>
+                                    {(groupedItems[category] || []).map(item => {
+                                        const quantity = getItemQuantity(item.id);
+                                        return (
+                                            <div key={item.id} className="menu-item-wrapper">
+                                                <div className="menu-item-row">
+                                                    <span className="item-name">{item.name}</span>
+                                                    <span className="dotted-line"></span>
+                                                    <span className="item-price">₹{item.price}</span>
+
+                                                    {quantity > 0 ? (
+                                                        <div className="menu-quantity-controls">
+                                                            <button
+                                                                className="qty-btn"
+                                                                onClick={() => onUpdateQuantity(item.id, -1)}
+                                                            >−</button>
+                                                            <span className="qty-value">{quantity}</span>
+                                                            <button
+                                                                className="qty-btn"
+                                                                onClick={() => onUpdateQuantity(item.id, 1)}
+                                                            >+</button>
+                                                        </div>
+                                                    ) : (
+                                                        <button className="add-btn-mini" onClick={() => onAddToCart(item)}>+</button>
+                                                    )}
+                                                </div>
+                                                <p className="item-desc">{item.description}</p>
                                             </div>
-                                            <p className="item-desc">{item.description}</p>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))}

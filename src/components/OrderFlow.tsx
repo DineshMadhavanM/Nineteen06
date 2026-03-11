@@ -7,7 +7,6 @@ interface OrderFlowProps {
     cart: CartItem[];
     onClose: () => void;
     onRemove: (id: string) => void;
-    onUpdateQuantity: (id: string, delta: number) => void;
     onClear: () => void;
     onLoginClick: () => void;
     isLoggedIn: boolean;
@@ -15,7 +14,7 @@ interface OrderFlowProps {
 
 type OrderStatus = 'Idle' | 'Order Placed' | 'Confirmed' | 'Preparing' | 'Ready' | 'Completed';
 
-export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, onUpdateQuantity, onClear, onLoginClick, isLoggedIn }) => {
+export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, onClear, onLoginClick, isLoggedIn }) => {
     const [status, setStatus] = useState<OrderStatus>('Idle');
     const [preparationTime, setPreparationTime] = useState(10);
     const [orderType, setOrderType] = useState<'Now' | 'Pre-Order'>('Now');
@@ -109,12 +108,11 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                                 <h4>{item.name}</h4>
                                                 <p>₹{item.price}</p>
                                             </div>
+                                            <div className="item-info">
+                                                <h4>{item.name}</h4>
+                                                <p>₹{item.price * item.quantity} {item.quantity > 1 && `(${item.quantity} × ₹${item.price})`}</p>
+                                            </div>
                                             <div className="item-actions">
-                                                <div className="quantity-controls">
-                                                    <button onClick={() => onUpdateQuantity(item.id, -1)}>−</button>
-                                                    <span>{item.quantity}</span>
-                                                    <button onClick={() => onUpdateQuantity(item.id, 1)}>+</button>
-                                                </div>
                                                 <button className="btn-remove" onClick={() => onRemove(item.id)}>Remove</button>
                                             </div>
                                         </div>

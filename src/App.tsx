@@ -145,7 +145,11 @@ function App() {
         }} />
 
         <Trending onAddToCart={addToCart} />
-        <Menu onAddToCart={addToCart} />
+        <Menu
+          onAddToCart={addToCart}
+          cart={cart}
+          onUpdateQuantity={updateQuantity}
+        />
         <WhyChooseUs />
         <AboutUs />
         <InstagramGallery />
@@ -178,7 +182,6 @@ function App() {
           cart={cart}
           onClose={() => setIsOrderSystemOpen(false)}
           onRemove={removeFromCart}
-          onUpdateQuantity={updateQuantity}
           onClear={clearCart}
           onLoginClick={() => {
             setIsOrderSystemOpen(false);
