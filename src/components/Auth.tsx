@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './Auth.css';
 import logo from '../assets/images/Logo.png';
 import { apiUrl } from '../lib/api';
+import { auth, googleProvider } from '../lib/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 interface AuthProps {
     onClose: () => void;
@@ -24,6 +26,43 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
     const [city, setCity] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const handleGoogleSignIn = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const idToken = await result.user.getIdToken();
+
+            const response = await fetch(apiUrl('/api/auth/google'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', data.token);
+                onSuccess(data.user);
+                onClose();
+            } else {
+                setError(data.message || 'Google Authentication failed');
+            }
+        } catch (err: any) {
+            console.error('Google Sign-In Error:', err);
+            if (err.code === 'auth/popup-closed-by-user') {
+                setError('Login cancelled or popup blocked. Please allow popups for this site.');
+            } else if (err.code === 'auth/operation-not-allowed') {
+                setError('Google Sign-In is not enabled in Firebase Console.');
+            } else if (err.code === 'auth/network-request-failed') {
+                setError('Network error. Please check your internet connection or disable ad-blockers.');
+            } else {
+                setError('Failed to sign in with Google. Please try again.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,6 +108,20 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
                 <div className="auth-content">
                     <h2 className="serif">{isLogin ? 'Welcome Back' : 'Join NINETEEN 06'}</h2>
                     <p className="auth-subtitle">Freshly made • Made with love</p>
+
+                    <button 
+                        type="button" 
+                        className="btn-google-auth" 
+                        onClick={handleGoogleSignIn}
+                        disabled={loading}
+                    >
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <div className="auth-divider">
+                        <span>or</span>
+                    </div>
 
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="form-group">

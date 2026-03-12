@@ -15,6 +15,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
 // Initialize Firebase Cloud Messaging and get a reference to the service
 export const messaging = getMessaging(app);
 

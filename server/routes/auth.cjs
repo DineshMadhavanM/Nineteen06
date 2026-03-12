@@ -80,6 +80,56 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// ─── Google Auth ─────────────────────────────────────────────────────────────
+router.post('/google', async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        if (!idToken) return res.status(400).json({ message: 'No ID token provided' });
+
+        const admin = req.firebaseAdmin;
+        if (!admin) return res.status(500).json({ message: 'Firebase Admin not initialized' });
+
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { email, name, picture } = decodedToken;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // Create new user if they don't exist
+            user = new User({
+                email,
+                username: name || email.split('@')[0],
+                isAdmin: isAdminEmail(email),
+                // Password is not required for Google users
+            });
+            await user.save();
+        } else {
+            // Update admin status if needed
+            if (user.isAdmin !== isAdminEmail(user.email)) {
+                user.isAdmin = isAdminEmail(user.email);
+                await user.save();
+            }
+        }
+
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secrettoken', { expiresIn: '7d' });
+        res.json({
+            token,
+            user: {
+                id: user._id,
+                email: user.email,
+                username: user.username,
+                phone: user.phone,
+                city: user.city,
+                isAdmin: isAdminEmail(user.email),
+                loyaltyCakes: user.loyaltyCakes
+            }
+        });
+    } catch (err) {
+        console.error('Google Auth Error:', err);
+        res.status(500).json({ error: 'Authentication failed' });
+    }
+});
+
 // ─── Auth Middleware ──────────────────────────────────────────────────────────
 const auth = async (req, res, next) => {
     try {
