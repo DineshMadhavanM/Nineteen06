@@ -212,13 +212,72 @@
 }
 
 @media (max-width: 480px) {
+    .auth-overlay {
+        align-items: flex-start;
+        padding: 2rem 1rem;
+        overflow-y: auto;
+    }
+
     .auth-modal {
         max-width: 100%;
-        height: 100%;
-        border-radius: 0;
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        height: auto;
+        border-radius: var(--radius-lg);
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .auth-content h2 {
+        font-size: 1.6rem;
+        margin-top: 0.5rem;
+    }
+
+    .auth-subtitle {
+        margin-bottom: 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .btn-google-auth {
+        padding: 0.6rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .auth-divider {
+        margin: 0.5rem 0;
+    }
+
+    .form-group {
+        margin-bottom: 0.6rem;
+    }
+
+    .form-group label {
+        font-size: 0.75rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .form-group input {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .btn-auth-submit {
+        padding: 0.8rem;
+        margin-top: 0.4rem;
+    }
+
+    .auth-footer {
+        margin-top: 1rem;
+    }
+
+    .auth-logo-bg {
+        width: 100px;
+        height: 100px;
+        top: -20px;
+        right: -20px;
     }
 }
