@@ -78,15 +78,28 @@ function App() {
     fetchUser();
   }, []);
 
-  const addToCart = (item: MenuItem) => {
+  const addToCart = (item: MenuItem, quantity: number = 1) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
+      // For customizable items, we check if the same item with SAME options exists
+      const existingItem = prevCart.find(cartItem => {
+        if (cartItem.id !== item.id) return false;
+        
+        // If it's a customizable item being added from the modal
+        const itemWithOptions = item as any;
+        if (itemWithOptions.selectedOptions && cartItem.selectedOptions) {
+          return JSON.stringify(itemWithOptions.selectedOptions) === JSON.stringify(cartItem.selectedOptions);
+        }
+        
+        // If it's a standard item (no options)
+        return !itemWithOptions.selectedOptions && !cartItem.selectedOptions;
+      });
+
       if (existingItem) {
         return prevCart.map(cartItem =>
-          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+          cartItem === existingItem ? { ...cartItem, quantity: cartItem.quantity + quantity } : cartItem
         );
       }
-      return [...prevCart, { ...item, quantity: 1 }];
+      return [...prevCart, { ...item, quantity } as CartItem];
     });
 
     // Show notification
@@ -96,16 +109,6 @@ function App() {
 
   const removeFromCart = (itemId: string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== itemId));
-  };
-
-  const updateQuantity = (itemId: string, delta: number) => {
-    setCart(prevCart => prevCart.map(item => {
-      if (item.id === itemId) {
-        const newQuantity = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQuantity };
-      }
-      return item;
-    }));
   };
 
   const clearCart = () => setCart([]);
@@ -147,8 +150,6 @@ function App() {
         <Trending onAddToCart={addToCart} />
         <Menu
           onAddToCart={addToCart}
-          cart={cart}
-          onUpdateQuantity={updateQuantity}
         />
         <WhyChooseUs />
         <AboutUs />

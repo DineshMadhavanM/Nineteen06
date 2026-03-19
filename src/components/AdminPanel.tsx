@@ -270,9 +270,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                 {order.status === 'Pending' ? (
                                                     <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem' }}>
                                                         <input
-                                                            type="text"
-                                                            placeholder="Delivery time"
-                                                            style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.8rem', width: '100px' }}
+                                                            type="time"
+                                                            style={{ 
+                                                                padding: '0.4rem', 
+                                                                borderRadius: '4px', 
+                                                                border: '1px solid #ccc', 
+                                                                fontSize: '0.9rem', 
+                                                                width: '120px',
+                                                                backgroundColor: '#fff'
+                                                            }}
                                                             onChange={(e) => setDeliveryTimes({ ...deliveryTimes, [order._id]: e.target.value })}
                                                         />
                                                         <button

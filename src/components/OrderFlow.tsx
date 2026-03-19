@@ -106,10 +106,15 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                         <div key={item.id} className="cart-item">
                                             <div className="item-info">
                                                 <h4>{item.name}</h4>
-                                                <p>₹{item.price}</p>
-                                            </div>
-                                            <div className="item-info">
-                                                <h4>{item.name}</h4>
+                                                {item.selectedOptions && (
+                                                    <div className="cart-item-options">
+                                                        {item.selectedOptions.map((opt, idx) => (
+                                                            <div key={idx} className="cart-opt">
+                                                                {opt.title}: {opt.itemName} (+₹{opt.price})
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                                 <p>₹{item.price * item.quantity} {item.quantity > 1 && `(${item.quantity} × ₹${item.price})`}</p>
                                             </div>
                                             <div className="item-actions">

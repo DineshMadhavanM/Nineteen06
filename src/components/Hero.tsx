@@ -30,10 +30,6 @@ const Hero: React.FC<HeroProps> = ({ onOrderClick }) => {
                             <span className="stat-label">Fresh Ingredients</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-value">10m</span>
-                            <span className="stat-label">Prep Time</span>
-                        </div>
-                        <div className="stat-item">
                             <span className="stat-value">4.9/5</span>
                             <span className="stat-label">Customer Rating</span>
                         </div>

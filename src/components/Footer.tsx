@@ -47,9 +47,6 @@ const Footer: React.FC = () => {
             <div className="footer-bottom">
                 <div className="container">
                     <p>&copy; {new Date().getFullYear()} NINETEEN 06. All rights reserved.</p>
-                    <div className="footer-notes">
-                        <span>Prepared fresh upon order. Kindly allow 10 minutes for preparation.</span>
-                    </div>
                 </div>
             </div>
         </footer>

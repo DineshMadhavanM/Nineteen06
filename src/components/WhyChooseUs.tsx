@@ -44,12 +44,6 @@ const WhyChooseUs: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="preparation-alert">
-                    <div className="alert-content">
-                        <span className="alert-icon">⚡</span>
-                        <p><strong>Freshness Guarantee:</strong> Kindly allow 10 minutes for preparation as we craft your dessert with love.</p>
-                    </div>
-                </div>
             </div>
         </section>
     );

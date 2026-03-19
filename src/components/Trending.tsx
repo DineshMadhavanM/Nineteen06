@@ -2,14 +2,37 @@ import React from 'react';
 import './Trending.css';
 import { menuData } from '../data/menu';
 import type { MenuItem } from '../data/menu';
+import CustomizationModal from './CustomizationModal';
+import { useState } from 'react';
 
 interface TrendingProps {
-    onAddToCart: (item: MenuItem) => void;
+    onAddToCart: (item: MenuItem, quantity?: number) => void;
 }
 
 const Trending: React.FC<TrendingProps> = ({ onAddToCart }) => {
+    const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     // Select a few representative items since trending flag might be missing in new data
     const trendingItems = menuData.slice(0, 3);
+
+    const handleAddClick = (item: MenuItem) => {
+        if (item.customizable) {
+            setSelectedItem(item);
+            setIsModalOpen(true);
+        } else {
+            onAddToCart(item);
+        }
+    };
+
+    const handleCustomizationAdd = (item: MenuItem, selectedOptions: { title: string; itemName: string; price: number }[], quantity: number) => {
+        const optionsTotal = selectedOptions.reduce((acc, opt) => acc + opt.price, 0);
+        onAddToCart({ 
+            ...item, 
+            price: item.price + optionsTotal, 
+            selectedOptions 
+        } as any, quantity);
+    };
 
     return (
         <section id="trending" className="trending section-padding">
@@ -37,13 +60,22 @@ const Trending: React.FC<TrendingProps> = ({ onAddToCart }) => {
                                 <p className="item-desc">{item.description}</p>
                                 <div className="item-footer">
                                     <span className="item-price">₹{item.price}</span>
-                                    <button className="btn-add" onClick={() => onAddToCart(item)}>Add to Order</button>
+                                    <button className="btn-add" onClick={() => handleAddClick(item)}>Add to Order</button>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            {selectedItem && (
+                <CustomizationModal 
+                    item={selectedItem}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onAdd={handleCustomizationAdd}
+                />
+            )}
         </section>
     );
 };

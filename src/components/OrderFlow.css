@@ -469,3 +469,15 @@ textarea.premium-input {
     background: var(--pistachio);
     color: var(--chocolate);
 }
+.cart-item-options {
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: #888;
+    line-height: 1.3;
+}
+
+.cart-opt {
+    padding-left: 8px;
+    border-left: 1px solid rgba(47, 30, 27, 0.1);
+    margin-bottom: 2px;
+}
