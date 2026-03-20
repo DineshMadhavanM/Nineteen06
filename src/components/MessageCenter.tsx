@@ -76,10 +76,31 @@ export const MessageCenter: React.FC<MessageCenterProps> = ({ onClose }) => {
                                     </div>
                                     <div className="order-total">Total: ₹{order.totalAmount}</div>
 
-                                    {order.status === 'Confirmed' && order.deliveryTime && (
+                                     {order.status === 'Confirmed' && order.deliveryTime && (
                                         <div className="admin-response">
                                             <span className="response-label">Admin Response:</span>
                                             <p className="delivery-info">Deliver in <strong>{order.deliveryTime}</strong></p>
+                                        </div>
+                                    )}
+
+                                    {order.status === 'Ready' && (
+                                        <div className="admin-response status-ready">
+                                            <span className="response-label">Update:</span>
+                                            <p className="delivery-info">your food ready we deliver soon</p>
+                                        </div>
+                                    )}
+
+                                    {order.status === 'Reached' && (
+                                        <div className="admin-response status-reached">
+                                            <span className="response-label">Update:</span>
+                                            <p className="delivery-info">we reach your location come to take food</p>
+                                        </div>
+                                    )}
+
+                                    {order.status === 'Rejected' && (
+                                        <div className="admin-response status-rejected">
+                                            <span className="response-label">Note:</span>
+                                            <p className="delivery-info">We really sorry for our inconvenience situations food order is rejected if you order next time you got the coupen code 15% offer</p>
                                         </div>
                                     )}
                                 </div>

@@ -134,7 +134,7 @@ router.put('/:id/confirm', auth, async (req, res) => {
                     const message = {
                         notification: {
                             title: '✅ Order Confirmed!',
-                            body: `Your order is confirmed and will be delivered around ${deliveryTime}.`,
+                            body: `your order is confirm your food is preparing`,
                         },
                         tokens: [...new Set(customer.fcmTokens)]
                     };
@@ -150,6 +150,96 @@ router.put('/:id/confirm', auth, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// ─── Admin: Reject Order ──────────────────────────────
+router.put('/:id/reject', auth, async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || !isAdminEmail(currentUser.email)) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const order = await Order.findByIdAndUpdate(req.params.id, { $set: { status: 'Rejected' } }, { new: true });
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        if (req.firebaseAdmin) {
+            try {
+                const customer = await User.findById(order.userId);
+                if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    const message = {
+                        notification: {
+                            title: '❌ Order Rejected',
+                            body: `We really sorry for our inconvenience situations food order is rejected if you order next time you got the coupen code 15% offer`,
+                        },
+                        tokens: [...new Set(customer.fcmTokens)]
+                    };
+                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                }
+            } catch (notifyErr) { console.error('Failed to send push notification:', notifyErr); }
+        }
+        res.json(order);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Admin: Set Order Ready ──────────────────────────────
+router.put('/:id/ready', auth, async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || !isAdminEmail(currentUser.email)) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const order = await Order.findByIdAndUpdate(req.params.id, { $set: { status: 'Ready' } }, { new: true });
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        if (req.firebaseAdmin) {
+            try {
+                const customer = await User.findById(order.userId);
+                if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    const message = {
+                        notification: {
+                            title: '🚚 Food Ready!',
+                            body: `your food ready we deliver soon`,
+                        },
+                        tokens: [...new Set(customer.fcmTokens)]
+                    };
+                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                }
+            } catch (notifyErr) { console.error('Failed to send push notification:', notifyErr); }
+        }
+        res.json(order);
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── Admin: Set Order Reached ──────────────────────────────
+router.put('/:id/reached', auth, async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        if (!currentUser || !isAdminEmail(currentUser.email)) {
+            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        }
+
+        const order = await Order.findByIdAndUpdate(req.params.id, { $set: { status: 'Reached' } }, { new: true });
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        if (req.firebaseAdmin) {
+            try {
+                const customer = await User.findById(order.userId);
+                if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    const message = {
+                        notification: {
+                            title: '📍 Arrived!',
+                            body: `we reach your location come to take food`,
+                        },
+                        tokens: [...new Set(customer.fcmTokens)]
+                    };
+                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                }
+            } catch (notifyErr) { console.error('Failed to send push notification:', notifyErr); }
+        }
+        res.json(order);
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ─── Admin: Complete Order (Delivery Completed) ─────────────────────────────

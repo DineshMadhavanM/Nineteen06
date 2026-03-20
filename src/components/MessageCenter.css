@@ -97,6 +97,14 @@
     border-left-color: #2ecc71;
 }
 
+.order-card.status-reached {
+    border-left-color: #3498db;
+}
+
+.order-card.status-rejected {
+    border-left-color: #e74c3c;
+}
+
 .order-card-header {
     display: flex;
     justify-content: space-between;
@@ -139,8 +147,22 @@
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #2ecc71;
+    color: var(--caramel);
     margin-bottom: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-ready .response-label {
+    color: #2ecc71;
+}
+
+.status-reached .response-label {
+    color: #3498db;
+}
+
+.status-rejected .response-label {
+    color: #e74c3c;
 }
 
 .delivery-info {

@@ -149,6 +149,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
+    const handleRejectOrder = async (orderId: string) => {
+        if (!window.confirm('Are you sure you want to reject this order?')) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(apiUrl(`/api/orders/${orderId}/reject`), {
+                method: 'PUT',
+                headers: { 'x-auth-token': token || '' }
+            });
+            if (res.ok) { fetchData(); alert('Order rejected and customer notified.'); }
+            else alert('Reject failed');
+        } catch (err) { alert('Request error'); }
+    };
+
+    const handleReadyOrder = async (orderId: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(apiUrl(`/api/orders/${orderId}/ready`), {
+                method: 'PUT',
+                headers: { 'x-auth-token': token || '' }
+            });
+            if (res.ok) { fetchData(); alert('Status updated: Order Ready!'); }
+            else alert('Update failed');
+        } catch (err) { alert('Request error'); }
+    };
+
+    const handleReachedOrder = async (orderId: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(apiUrl(`/api/orders/${orderId}/reached`), {
+                method: 'PUT',
+                headers: { 'x-auth-token': token || '' }
+            });
+            if (res.ok) { fetchData(); alert('Status updated: Reached location!'); }
+            else alert('Update failed');
+        } catch (err) { alert('Request error'); }
+    };
+
     const handleCakeToggle = async (userId: string, cakeIndex: number) => {
         try {
             const token = localStorage.getItem('token');
@@ -276,33 +313,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             </td>
                                             <td data-label="Status / Action">
                                                 {order.status === 'Pending' ? (
-                                                    <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                                         {order.latitude && (
-                                                            <button
-                                                                className="tab-btn"
-                                                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }}
-                                                                onClick={() => setMapOrder(order)}
-                                                            >
-                                                                📍 Route
-                                                            </button>
+                                                            <button className="tab-btn" style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }} onClick={() => setMapOrder(order)}>📍 Route</button>
                                                         )}
+                                                        <button 
+                                                            className="tab-btn" 
+                                                            style={{ padding: '0.4rem 0.6rem', fontSize: '0.8rem', background: '#ff4d4d', color: 'white', border: 'none' }} 
+                                                            onClick={() => handleRejectOrder(order._id)}
+                                                        >
+                                                            Reject
+                                                        </button>
                                                         <input
                                                             type="time"
-                                                            style={{ 
-                                                                padding: '0.4rem', 
-                                                                borderRadius: '4px', 
-                                                                border: '1px solid #ccc', 
-                                                                fontSize: '0.9rem', 
-                                                                width: '120px',
-                                                                backgroundColor: '#fff'
-                                                            }}
+                                                            style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.9rem', width: '100px' }}
                                                             onChange={(e) => setDeliveryTimes({ ...deliveryTimes, [order._id]: e.target.value })}
                                                         />
-                                                        <button
-                                                            className="tab-btn active"
-                                                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
-                                                            onClick={() => handleConfirmOrder(order._id)}
-                                                        >
+                                                        <button className="tab-btn active" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => handleConfirmOrder(order._id)}>
                                                             Confirm
                                                         </button>
                                                     </div>
@@ -313,33 +340,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                                 {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
                                                             </span>
                                                             {order.latitude && (
-                                                                <button
-                                                                    className="tab-btn"
-                                                                    style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }}
-                                                                    onClick={() => setMapOrder(order)}
-                                                                >
-                                                                    📍 Route
-                                                                </button>
+                                                                <button className="tab-btn" style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }} onClick={() => setMapOrder(order)}>📍 Route</button>
                                                             )}
                                                         </div>
-                                                        <button
-                                                            className="btn-complete-order"
-                                                            style={{
-                                                                padding: '0.7rem 1rem',
-                                                                fontSize: '0.8rem',
-                                                                background: '#27ae60',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                borderRadius: '4px',
-                                                                cursor: 'pointer',
-                                                                fontWeight: 'bold',
-                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                                                minHeight: '44px' /* Apple's recommended minimum touch target */
-                                                            }}
-                                                            onClick={() => handleCompleteOrder(order._id)}
-                                                        >
-                                                            Mark as Completed
-                                                        </button>
+                                                        
+                                                        {/* Sequential Action Buttons based on Status */}
+                                                        {order.status === 'Confirmed' && (
+                                                            <button className="btn-complete-order" style={{ padding: '0.7rem 1rem', fontSize: '0.85rem', background: '#f39c12', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleReadyOrder(order._id)}>
+                                                                📦 Order Ready
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'Ready' && (
+                                                            <button className="btn-complete-order" style={{ padding: '0.7rem 1rem', fontSize: '0.85rem', background: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleReachedOrder(order._id)}>
+                                                                📍 Reached
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'Reached' && (
+                                                            <button className="btn-complete-order" style={{ padding: '0.7rem 1rem', fontSize: '0.85rem', background: '#27ae60', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleCompleteOrder(order._id)}>
+                                                                ✅ Mark as Completed
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>

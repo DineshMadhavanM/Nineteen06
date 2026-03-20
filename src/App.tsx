@@ -15,7 +15,8 @@ import { AdminPanel } from './components/AdminPanel';
 import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
 import MobileFAB from './components/MobileFAB';
-import { requestFirebaseNotificationPermission } from './lib/firebase';
+import { requestFirebaseNotificationPermission, messaging } from './lib/firebase';
+import { onMessage } from 'firebase/messaging';
 import type { MenuItem, CartItem } from './data/menu';
 import { apiUrl } from './lib/api';
 
@@ -76,6 +77,27 @@ function App() {
       }
     };
     fetchUser();
+  }, []);
+
+  // Listen for Firebase Push Notifications while app is in foreground
+  useEffect(() => {
+    if (!messaging) return;
+    try {
+      const unsubscribe = onMessage(messaging, (payload) => {
+        console.log('Foreground Push Notification Received:', payload);
+        if (payload.notification?.body) {
+          setNotification({ 
+            message: payload.notification.title ? `${payload.notification.title} - ${payload.notification.body}` : payload.notification.body, 
+            type: 'info' 
+          });
+          // Hide toast after a longer duration so they can read it
+          setTimeout(() => setNotification(null), 8000);
+        }
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      console.log('FCM onMessage listener setup failed', err);
+    }
   }, []);
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {

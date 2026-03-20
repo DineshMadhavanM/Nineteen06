@@ -49,15 +49,17 @@ export const Auth: React.FC<AuthProps> = ({ onClose, onSuccess }) => {
                 setError(data.message || 'Google Authentication failed');
             }
         } catch (err: any) {
-            console.error('Google Sign-In Error:', err);
+            console.error('Google Sign-In Full Error:', err);
             if (err.code === 'auth/popup-closed-by-user') {
                 setError('Login cancelled or popup blocked. Please allow popups for this site.');
             } else if (err.code === 'auth/operation-not-allowed') {
                 setError('Google Sign-In is not enabled in Firebase Console.');
             } else if (err.code === 'auth/network-request-failed') {
                 setError('Network error. Please check your internet connection or disable ad-blockers.');
+            } else if (err.code === 'auth/internal-error') {
+                setError('Firebase Internal Error. Check if your domain (localhost) is authorized in Firebase Console.');
             } else {
-                setError('Failed to sign in with Google. Please try again.');
+                setError(`Sign-in failed: ${err.message || 'Please try again.'}`);
             }
         } finally {
             setLoading(false);
