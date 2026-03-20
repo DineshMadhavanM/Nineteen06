@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPanel.css';
 import { apiUrl } from '../lib/api';
+// Routing Map Imports
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface AdminPanelProps {
     onClose: () => void;
@@ -28,6 +32,8 @@ interface Order {
     customerPhone?: string;
     status: string;
     deliveryTime?: string;
+    latitude?: number;
+    longitude?: number;
     createdAt: string;
 }
 
@@ -37,6 +43,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'users' | 'orders'>('users');
     const [deliveryTimes, setDeliveryTimes] = useState<{ [key: string]: string }>({});
+    const [mapOrder, setMapOrder] = useState<Order | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -171,7 +178,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="admin-overlay">
+        <>
+            <div className="admin-overlay">
             <div className="admin-modal">
                 <div className="admin-header">
                     <h2 className="serif">Admin Dashboard</h2>
@@ -269,6 +277,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                             <td data-label="Status / Action">
                                                 {order.status === 'Pending' ? (
                                                     <div className="confirm-action" style={{ display: 'flex', gap: '0.5rem' }}>
+                                                        {order.latitude && (
+                                                            <button
+                                                                className="tab-btn"
+                                                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }}
+                                                                onClick={() => setMapOrder(order)}
+                                                            >
+                                                                📍 Route
+                                                            </button>
+                                                        )}
                                                         <input
                                                             type="time"
                                                             style={{ 
@@ -291,9 +308,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                     </div>
                                                 ) : (
                                                     <div className="status-action-cell" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                                                        <span className={`status-badge ${order.status.toLowerCase()}`}>
-                                                            {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
-                                                        </span>
+                                                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                            <span className={`status-badge ${order.status.toLowerCase()}`}>
+                                                                {order.status} {order.deliveryTime && `(${order.deliveryTime})`}
+                                                            </span>
+                                                            {order.latitude && (
+                                                                <button
+                                                                    className="tab-btn"
+                                                                    style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }}
+                                                                    onClick={() => setMapOrder(order)}
+                                                                >
+                                                                    📍 Route
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                         <button
                                                             className="btn-complete-order"
                                                             style={{
@@ -356,22 +384,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                     </span>
                                                 </td>
                                                 <td data-label="Actions">
-                                                    <button
-                                                        className="btn-delete-order"
-                                                        style={{
-                                                            padding: '0.4rem 0.8rem',
-                                                            fontSize: '0.75rem',
-                                                            background: '#e74c3c',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            cursor: 'pointer',
-                                                            fontWeight: 'bold'
-                                                        }}
-                                                        onClick={() => handleDeleteOrder(order._id)}
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                                        {order.latitude && (
+                                                            <button
+                                                                className="tab-btn"
+                                                                style={{ padding: '0.4rem 0.6rem', fontSize: '0.7rem', background: 'var(--pistachio)' }}
+                                                                onClick={() => setMapOrder(order)}
+                                                            >
+                                                                📍 Route
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            className="btn-delete-order"
+                                                            style={{
+                                                                padding: '0.4rem 0.8rem',
+                                                                fontSize: '0.75rem',
+                                                                background: '#e74c3c',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: 'bold'
+                                                            }}
+                                                            onClick={() => handleDeleteOrder(order._id)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -382,6 +421,141 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                     )}
                 </div>
             </div>
-        </div>
+
+            {mapOrder && (
+                <div className="map-modal-overlay" onClick={() => setMapOrder(null)}>
+                    <div className="map-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="map-modal-header">
+                            <h3>Delivery Route: {mapOrder.customerName}</h3>
+                            <button onClick={() => setMapOrder(null)}>×</button>
+                        </div>
+                        <div className="map-modal-body">
+                            <AdminRouteMap 
+                                customerLocation={[mapOrder.latitude!, mapOrder.longitude!]} 
+                            />
+                        </div>
+                        <div className="map-modal-footer">
+                            <p><strong>Address:</strong> {mapOrder.address}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            </div>
+        </>
+    );
+};
+
+// --- Sub-component for the Routing Map ---
+
+const BAKERY_LOCATION: [number, number] = [10.0101, 77.4770];
+
+const AdminRouteMap = ({ customerLocation }: { customerLocation: [number, number] }) => {
+    const [fromLocation, setFromLocation] = useState<[number, number] | null>(null);
+    const [locating, setLocating] = useState(true);
+    const [usingLiveGps, setUsingLiveGps] = useState(false);
+
+    useEffect(() => {
+        if (!navigator.geolocation) {
+            setFromLocation(BAKERY_LOCATION);
+            setLocating(false);
+            return;
+        }
+
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                setFromLocation([pos.coords.latitude, pos.coords.longitude]);
+                setUsingLiveGps(true);
+                setLocating(false);
+            },
+            () => {
+                // Permission denied or unavailable — fall back to bakery address
+                if (locating) {
+                    setFromLocation(BAKERY_LOCATION);
+                    setUsingLiveGps(false);
+                    setLocating(false);
+                }
+            },
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+
+        // Cleanup the GPS watcher when the map is closed to save battery
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, []);
+
+    if (locating) {
+        return (
+            <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', color: 'var(--chocolate)' }}>
+                <div style={{ fontSize: '2rem' }}>📍</div>
+                <p style={{ fontWeight: '600' }}>Getting your location…</p>
+                <p style={{ fontSize: '0.8rem', color: '#888' }}>Allow location access for live routing</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', marginBottom: '0.4rem', background: usingLiveGps ? '#e8f5e9' : '#fff8e1', borderRadius: '6px', color: usingLiveGps ? '#2e7d32' : '#f57f17', fontWeight: '600' }}>
+                {usingLiveGps ? '📡 Using your live GPS location as start point' : '🧁 Using bakery address as start point (location access denied)'}
+            </div>
+            <MapContainer center={fromLocation!} zoom={13} style={{ height: '400px', width: '100%', borderRadius: '8px' }}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={fromLocation!}>
+                    <Popup>{usingLiveGps ? '📍 Your Current Location' : '🧁 NINETEEN 06 Bakery\n106, Edamal Street, Theni'}</Popup>
+                </Marker>
+                <Marker position={customerLocation}>
+                    <Popup>📦 Customer Location</Popup>
+                </Marker>
+                <RoutingMachine from={fromLocation!} to={customerLocation} />
+            </MapContainer>
+        </>
+    );
+};
+
+// Functional routing component checking the backend proxy instead of LRM
+const RoutingMachine = ({ from, to }: { from: [number, number], to: [number, number] }) => {
+    const map = useMap();
+    const [routePath, setRoutePath] = useState<[number, number][]>([]);
+
+    useEffect(() => {
+        if (!from || !to) return;
+
+        const fetchRoute = async () => {
+            try {
+                // Fetch from our backend proxy
+                const res = await fetch(
+                    apiUrl(`/api/geocode/route?startLat=${from[0]}&startLon=${from[1]}&endLat=${to[0]}&endLon=${to[1]}`)
+                );
+                const data = await res.json();
+                
+                if (data.routes && data.routes.length > 0) {
+                    const coords = data.routes[0].geometry.coordinates;
+                    // GeoJSON format is [lon, lat], Leaflet polyline expects [lat, lon]
+                    const latLngs: [number, number][] = coords.map((c: any) => [c[1], c[0]]);
+                    setRoutePath(latLngs);
+
+                    // Fit map bounds to show the whole route
+                    if (latLngs.length > 0 && map) {
+                        const bounds = L.latLngBounds(latLngs);
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching route from backend proxy:', err);
+            }
+        };
+
+        fetchRoute();
+    }, [from, to, map]);
+
+    if (routePath.length === 0) return null;
+
+    return (
+        <Polyline 
+            positions={routePath} 
+            pathOptions={{ color: '#f39c12', weight: 6, opacity: 0.8 }} 
+        />
     );
 };

@@ -1,4 +1,4 @@
-﻿const path = require('path');
+const path = require('path');
 const express = require('express');
 const fs = require('fs');
 
@@ -80,6 +80,52 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
+
+// ─── Nominatim Geocoding Proxy (avoids CORS in browser) ─────────────────────
+app.get('/api/geocode/reverse', async (req, res) => {
+    const { lat, lon } = req.query;
+    if (!lat || !lon) return res.status(400).json({ error: 'lat and lon required' });
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'Nineteen06BakeryApp/1.0' }
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Geocoding failed' });
+    }
+});
+
+app.get('/api/geocode/search', async (req, res) => {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ error: 'q required' });
+    try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=in`;
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'Nineteen06BakeryApp/1.0' }
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+app.get('/api/geocode/route', async (req, res) => {
+    const { startLat, startLon, endLat, endLon } = req.query;
+    if (!startLat || !startLon || !endLat || !endLon) return res.status(400).json({ error: 'start and end coordinates required' });
+    try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`;
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'Nineteen06BakeryApp/1.0' }
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Routing failed' });
+    }
+});
 
 // ─── Frontend Serving (Production) ──────────────────────────────────────────
 // Serve static files from the Vite build directory

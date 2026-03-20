@@ -30,7 +30,9 @@ const OrderSchema = new mongoose.Schema({
     deliveryTime: String,
     customerName: String,
     customerEmail: String,
-    customerPhone: String
+    customerPhone: String,
+    latitude: Number,
+    longitude: Number
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);

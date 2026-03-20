@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './OrderFlow.css';
 import type { CartItem } from '../data/menu';
 import { apiUrl } from '../lib/api';
+import { LocationPicker } from './LocationPicker';
 
 interface OrderFlowProps {
     cart: CartItem[];
@@ -23,6 +24,7 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
     const [instructions, setInstructions] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [placedOrder, setPlacedOrder] = useState<any>(null);
+    const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const packagingCharge = (cart.length > 0 && orderType === 'Now') ? 10 : 0;
@@ -54,7 +56,9 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                     items: cart,
                     totalAmount: total,
                     address: orderType === 'Now' ? address : 'Self-Pickup',
-                    instructions
+                    instructions,
+                    latitude: coords?.lat,
+                    longitude: coords?.lng
                 })
             });
 
@@ -169,13 +173,24 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                                 <span className="label-icon">📍</span> Delivery Address
                                                 {orderType === 'Now' && <span className="required">*</span>}
                                             </label>
-                                            <textarea
-                                                placeholder={orderType === 'Now' ? "Enter your full address" : "N/A for pickup"}
-                                                value={address}
-                                                onChange={(e) => setAddress(e.target.value)}
-                                                disabled={orderType !== 'Now'}
-                                                className="premium-input"
+                                            <LocationPicker
+                                                onAddressSelect={(addr) => setAddress(addr)}
+                                                onLocationSelect={(lat, lng) => setCoords({ lat, lng })}
+                                                initialAddress={address}
                                             />
+                                            {orderType === 'Now' && (
+                                                <input
+                                                    type="text"
+                                                    placeholder="House No. / Flat / Floor (Required)"
+                                                    value={address.split(' | ')[0] === address ? '' : address.split(' | ')[0]}
+                                                    onChange={(e) => {
+                                                        const mainAddr = address.includes(' | ') ? address.split(' | ').slice(1).join(' | ') : address;
+                                                        setAddress(`${e.target.value} | ${mainAddr}`);
+                                                    }}
+                                                    className="premium-input"
+                                                    style={{ marginTop: '0.5rem' }}
+                                                />
+                                            )}
                                         </div>
                                         <div className="form-group">
                                             <label>

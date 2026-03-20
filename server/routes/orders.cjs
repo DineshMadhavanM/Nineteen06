@@ -29,7 +29,9 @@ const isAdminEmail = (email) => ADMIN_EMAILS.includes(email.trim().toLowerCase()
 // ─── Submit Order ────────────────────────────────────────────────────────────
 router.post('/', auth, async (req, res) => {
     try {
-        const { items, totalAmount, address, instructions } = req.body;
+        console.log('--- NEW ORDER SUBMISSION ---');
+        console.log('Body:', JSON.stringify(req.body, null, 2));
+        const { items, totalAmount, address, instructions, latitude, longitude } = req.body;
         const user = await User.findById(req.user.id);
 
         if (!user) return res.status(404).json({ message: 'User not found' });
@@ -42,7 +44,9 @@ router.post('/', auth, async (req, res) => {
             instructions,
             customerName: user.username || user.email.split('@')[0],
             customerEmail: user.email,
-            customerPhone: user.phone
+            customerPhone: user.phone,
+            latitude,
+            longitude
         });
 
         const savedOrder = await newOrder.save();
