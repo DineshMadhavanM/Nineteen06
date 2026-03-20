@@ -26,36 +26,46 @@ export const VAPID_KEY = "BF24RE_XY4CfZW_PoSHaoNcQ-l9kkTjtMOdMcQR0PbF3NE6HelC6RV
 
 export const requestFirebaseNotificationPermission = async () => {
     try {
+        console.log("FCM: Requesting notification permission...");
         const permission = await Notification.requestPermission();
+        console.log("FCM: Permission status:", permission);
+
         if (permission === "granted") {
-            // Explicitly register the service worker for better mobile support
+            console.log("FCM: Registering service worker explicitly...");
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            console.log("FCM: Service worker registered successfully.");
+
+            console.log("FCM: Attempting to get registration token...");
             const token = await getToken(messaging, {
                 vapidKey: VAPID_KEY,
                 serviceWorkerRegistration: registration
             });
+
             if (token) {
-                console.log("FCM Token generated:", token);
-                // Send this token to the backend
+                console.log("FCM: Registration token generated:", token);
                 await sendTokenToServer(token);
                 return token;
             } else {
-                console.log("No registration token available. Request permission to generate one.");
+                console.warn("FCM: No registration token available.");
             }
         } else {
-            console.log("Do not have permission for notifications.");
+            console.warn("FCM: Permission not granted for notifications.");
         }
     } catch (error) {
-        console.error("An error occurred while retrieving token. ", error);
+        console.error("FCM: An error occurred during the notification setup process:", error);
     }
 };
 
 const sendTokenToServer = async (fcmToken: string) => {
     try {
         const authToken = localStorage.getItem('token');
-        if (!authToken) return;
+        if (!authToken) {
+            console.warn("FCM: No auth token found in local storage, skipping server registration.");
+            return;
+        }
 
-        await fetch(apiUrl('/api/auth/fcm-token'), {
+        console.log("FCM: Sending token to server...");
+        const response = await fetch(apiUrl('/api/auth/fcm-token'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -63,8 +73,14 @@ const sendTokenToServer = async (fcmToken: string) => {
             },
             body: JSON.stringify({ fcmToken })
         });
-        console.log("FCM Token saved to server.");
+
+        if (response.ok) {
+            console.log("FCM: Token successfully saved to server.");
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("FCM: Server rejected token registration:", response.status, errorData);
+        }
     } catch (err) {
-        console.error("Failed to save FCM token to server:", err);
+        console.error("FCM: Failed to save token to server due to network error:", err);
     }
 };

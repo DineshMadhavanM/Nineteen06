@@ -58,18 +58,26 @@ router.post('/', auth, async (req, res) => {
                 const adminTokens = admins.flatMap(admin => admin.fcmTokens).filter(Boolean);
 
                 if (adminTokens.length > 0) {
+                    console.log(`FCM: Sending new order notification to ${adminTokens.length} admin tokens.`);
                     const message = {
                         notification: {
                             title: '🌟 New Order Received!',
                             body: `${user.username || 'A customer'} placed an order for ₹${totalAmount}.`,
                         },
-                        tokens: [...new Set(adminTokens)], // Remove duplicates
+                        tokens: [...new Set(adminTokens)],
                     };
-                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
-                    console.log(`Sent new order notification to ${adminTokens.length} admin devices.`);
+                    const response = await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`FCM: Push notification successful. Success count: ${response.successCount}, Failure count: ${response.failureCount}`);
+                    if (response.failureCount > 0) {
+                        response.responses.forEach((resp, idx) => {
+                            if (!resp.success) console.error(`FCM: Token at index ${idx} failed:`, resp.error);
+                        });
+                    }
+                } else {
+                    console.warn('FCM: No admin tokens found to notify.');
                 }
             } catch (notifyErr) {
-                console.error('Failed to send admin push notification:', notifyErr);
+                console.error('FCM: Failed to send admin push notification:', notifyErr);
             }
         }
 
@@ -131,6 +139,7 @@ router.put('/:id/confirm', auth, async (req, res) => {
             try {
                 const customer = await User.findById(order.userId);
                 if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    console.log(`FCM: Sending confirmation notification to user ${customer.email} (${customer.fcmTokens.length} tokens).`);
                     const message = {
                         notification: {
                             title: '✅ Order Confirmed!',
@@ -138,11 +147,18 @@ router.put('/:id/confirm', auth, async (req, res) => {
                         },
                         tokens: [...new Set(customer.fcmTokens)]
                     };
-                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
-                    console.log(`Sent confirmation notification to ${customer.fcmTokens.length} devices for user ${customer.email}`);
+                    const response = await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`FCM: Sent confirmation to customer. Success: ${response.successCount}, Failure: ${response.failureCount}`);
+                    if (response.failureCount > 0) {
+                        response.responses.forEach((resp, idx) => {
+                            if (!resp.success) console.error(`FCM: Customer token at index ${idx} failed:`, resp.error);
+                        });
+                    }
+                } else {
+                    console.warn(`FCM: No tokens found for user ${customer?.email}`);
                 }
             } catch (notifyErr) {
-                console.error('Failed to send customer push notification:', notifyErr);
+                console.error('FCM: Failed to send customer push notification:', notifyErr);
             }
         }
 
@@ -167,6 +183,7 @@ router.put('/:id/reject', auth, async (req, res) => {
             try {
                 const customer = await User.findById(order.userId);
                 if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    console.log(`FCM: Sending rejection notification to user ${customer.email}.`);
                     const message = {
                         notification: {
                             title: '❌ Order Rejected',
@@ -174,9 +191,12 @@ router.put('/:id/reject', auth, async (req, res) => {
                         },
                         tokens: [...new Set(customer.fcmTokens)]
                     };
-                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    const response = await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`FCM: Rejection sent. Success: ${response.successCount}, Failure: ${response.failureCount}`);
+                } else {
+                    console.warn(`FCM: No tokens found for user ${customer?.email}`);
                 }
-            } catch (notifyErr) { console.error('Failed to send push notification:', notifyErr); }
+            } catch (notifyErr) { console.error('FCM: Failed to send push notification:', notifyErr); }
         }
         res.json(order);
     } catch (err) { res.status(500).json({ error: err.message }); }
@@ -197,6 +217,7 @@ router.put('/:id/ready', auth, async (req, res) => {
             try {
                 const customer = await User.findById(order.userId);
                 if (customer && customer.fcmTokens && customer.fcmTokens.length > 0) {
+                    console.log(`FCM: Sending Ready notification to user ${customer.email}.`);
                     const message = {
                         notification: {
                             title: '🚚 Food Ready!',
@@ -204,9 +225,12 @@ router.put('/:id/ready', auth, async (req, res) => {
                         },
                         tokens: [...new Set(customer.fcmTokens)]
                     };
-                    await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    const response = await req.firebaseAdmin.messaging().sendEachForMulticast(message);
+                    console.log(`FCM: Ready notification sent. Success: ${response.successCount}, Failure: ${response.failureCount}`);
+                } else {
+                    console.warn(`FCM: No tokens found for user ${customer?.email}`);
                 }
-            } catch (notifyErr) { console.error('Failed to send push notification:', notifyErr); }
+            } catch (notifyErr) { console.error('FCM: Failed to send push notification:', notifyErr); }
         }
         res.json(order);
     } catch (err) { res.status(500).json({ error: err.message }); }

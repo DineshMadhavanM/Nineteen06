@@ -189,18 +189,29 @@ router.put('/profile', auth, async (req, res) => {
 router.post('/fcm-token', auth, async (req, res) => {
     try {
         const { fcmToken } = req.body;
-        if (!fcmToken) return res.status(400).json({ message: 'No FCM token provided' });
+        console.log(`FCM: Received token registration request for user ${req.user.id}`);
+        if (!fcmToken) {
+            console.warn('FCM: No token provided in request body');
+            return res.status(400).json({ message: 'No FCM token provided' });
+        }
 
         const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            console.error(`FCM: User ${req.user.id} not found during token registration`);
+            return res.status(404).json({ message: 'User not found' });
+        }
 
         if (!user.fcmTokens.includes(fcmToken)) {
             user.fcmTokens.push(fcmToken);
             await user.save();
+            console.log(`FCM: New token saved for user ${user.email}. Total tokens: ${user.fcmTokens.length}`);
+        } else {
+            console.log(`FCM: Token already exists for user ${user.email}`);
         }
 
         res.json({ message: 'Token saved successfully' });
     } catch (err) {
+        console.error('FCM: Error saving token:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
