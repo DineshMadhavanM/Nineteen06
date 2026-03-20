@@ -11,7 +11,7 @@ interface CustomizationModalProps {
 }
 
 const CustomizationModal: React.FC<CustomizationModalProps> = ({ item, isOpen, onClose, onAdd }) => {
-    const [selections, setSelections] = useState<Record<string, string>>({});
+    const [selections, setSelections] = useState<Record<string, string[]>>({});
     const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
@@ -24,10 +24,16 @@ const CustomizationModal: React.FC<CustomizationModalProps> = ({ item, isOpen, o
     if (!isOpen) return null;
 
     const handleOptionSelect = (title: string, optionId: string) => {
-        setSelections((prev: Record<string, string>) => ({
-            ...prev,
-            [title]: optionId
-        }));
+        setSelections((prev) => {
+            const currentSelected = prev[title] || [];
+            if (currentSelected.includes(optionId)) {
+                // Deselect if already selected
+                return { ...prev, [title]: currentSelected.filter(id => id !== optionId) };
+            } else {
+                // Select and add to the array
+                return { ...prev, [title]: [...currentSelected, optionId] };
+            }
+        });
     };
 
     const handleIncrement = () => setQuantity(prev => prev + 1);
@@ -40,17 +46,22 @@ const CustomizationModal: React.FC<CustomizationModalProps> = ({ item, isOpen, o
     };
 
     const handleAddToCart = () => {
-        const selectedOptions = item.customizations
-            ?.filter(group => selections[group.title]) // Only include if selected
-            .map(group => {
-                const optionId = selections[group.title];
+        const selectedOptions: { title: string; itemName: string; price: number }[] = [];
+        
+        item.customizations?.forEach(group => {
+            const selectedIds = selections[group.title] || [];
+            selectedIds.forEach(optionId => {
                 const optionItem = menuData.find(m => m.id === optionId);
-                return {
-                    title: group.title,
-                    itemName: optionItem?.name || '',
-                    price: optionItem?.price || 0
-                };
-            }) || [];
+                if (optionItem) {
+                    selectedOptions.push({
+                        title: group.title,
+                        itemName: optionItem.name,
+                        price: optionItem.price
+                    });
+                }
+            });
+        });
+
         onAdd(item, selectedOptions, quantity);
         onClose();
     };
@@ -76,7 +87,7 @@ const CustomizationModal: React.FC<CustomizationModalProps> = ({ item, isOpen, o
                                 {group.options.map(optionId => {
                                     const optionItem = menuData.find(m => m.id === optionId);
                                     if (!optionItem) return null;
-                                    const isSelected = selections[group.title] === optionId;
+                                    const isSelected = (selections[group.title] || []).includes(optionId);
 
                                     return (
                                         <div 
@@ -109,7 +120,7 @@ const CustomizationModal: React.FC<CustomizationModalProps> = ({ item, isOpen, o
                         <button className="q-btn" onClick={handleIncrement}>+</button>
                     </div>
                     <div className="total-price">
-                        ₹{(item.price + (Object.values(selections) as string[]).reduce((acc: number, id: string) => {
+                        ₹{(item.price + Object.values(selections).flat().reduce((acc: number, id: string) => {
                             const opt = menuData.find(m => m.id === id);
                             return acc + (opt?.price || 0);
                         }, 0)) * quantity}
