@@ -1,0 +1,17 @@
+{
+  "short_name": "1906",
+  "name": "Nineteen 06 Bakery",
+  "description": "Premium Bakery & Cafe",
+  "icons": [
+    {
+      "src": "src/assets/images/Logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2f1e1b",
+  "background_color": "#fdf8f4"
+}
