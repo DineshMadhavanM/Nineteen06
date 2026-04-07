@@ -176,7 +176,7 @@ function App() {
         <WhyChooseUs />
         <AboutUs />
         <InstagramGallery />
-        <CustomerReviews />
+        <CustomerReviews isAdmin={!!user?.isAdmin} />
       </main>
 
       <Footer />
