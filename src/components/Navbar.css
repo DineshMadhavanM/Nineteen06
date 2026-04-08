@@ -251,3 +251,38 @@
         display: block !important;
     }
 }
+
+/* Shop Status Badge */
+.shop-status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: var(--transition);
+    user-select: none;
+    box-shadow: var(--shadow-soft);
+}
+
+.shop-status-badge.open {
+    background: var(--pistachio);
+    color: var(--chocolate);
+    border: 1px solid rgba(138, 154, 91, 0.3);
+}
+
+.shop-status-badge.closed {
+    background: #FF6B6B;
+    color: white;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.shop-status-badge:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-medium);
+}
+
+.navbar.scrolled .shop-status-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+}

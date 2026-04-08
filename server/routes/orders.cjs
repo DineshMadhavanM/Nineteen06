@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Order = require('../models/Order.cjs');
 const User = require('../models/User.cjs');
+const Settings = require('../models/Settings.cjs');
 
 router.use((req, res, next) => {
     console.log(`Orders Router: ${req.method} ${req.url}`);
@@ -31,6 +32,28 @@ router.post('/', auth, async (req, res) => {
     try {
         console.log('--- NEW ORDER SUBMISSION ---');
         console.log('Body:', JSON.stringify(req.body, null, 2));
+
+        // ─── Shop Availability Check ──────────────────────────────────────────
+        let settings = await Settings.findOne();
+        if (!settings) {
+            settings = await Settings.create({ manualStatus: 'OPEN' });
+        }
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        
+        const isWithinTimeWindow = currentHour >= 9 && currentHour < 15;
+        const isManuallyOpen = settings.manualStatus === 'OPEN';
+
+        if (!isManuallyOpen || !isWithinTimeWindow) {
+            let reason = !isManuallyOpen ? 'The shop is manually closed by the owner.' : 'Ordering is only available between 9:00 AM and 3:00 PM.';
+            return res.status(403).json({ 
+                message: 'Ordering is currently unavailable.',
+                reason: reason,
+                status: 'CLOSED'
+            });
+        }
+
         const { items, totalAmount, address, instructions, latitude, longitude } = req.body;
         const user = await User.findById(req.user.id);
 

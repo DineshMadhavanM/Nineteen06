@@ -40,6 +40,7 @@ if (serviceAccountPathToUse) {
 const authRoutes = require('./routes/auth.cjs');
 const orderRoutes = require('./routes/orders.cjs');
 const reviewRoutes = require('./routes/reviews.cjs');
+const settingsRoutes = require('./routes/settings.cjs');
 
 const app = express();
 app.use(express.json());
@@ -82,6 +83,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // ─── Nominatim Geocoding Proxy (avoids CORS in browser) ─────────────────────
 app.get('/api/geocode/reverse', async (req, res) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
+import { apiUrl } from '../lib/api';
 
 import logoImg from '../assets/images/Logo.png';
 
@@ -25,13 +26,34 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, onProfileClick, onAdminClick, onMessageClick, user, onLogout }) => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const [shopStatus, setShopStatus] = useState<{ calculatedStatus: string; isOpen: boolean }>({ calculatedStatus: '...', isOpen: false });
 
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
         };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        
+        // Fetch Shop Status
+        const fetchStatus = async () => {
+            try {
+                const res = await fetch(apiUrl('/api/settings/status'));
+                if (res.ok) {
+                    const data = await res.json();
+                    setShopStatus({ calculatedStatus: data.calculatedStatus, isOpen: data.isOpen });
+                }
+            } catch (err) {
+                console.error('Failed to fetch shop status');
+            }
+        };
+
+        fetchStatus();
+        const interval = setInterval(fetchStatus, 60000); // Poll every minute
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            clearInterval(interval);
+        };
     }, []);
 
     return (
@@ -41,7 +63,12 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
                     <img src={logoImg} alt="Nineteen 06" className="mobile-logo-img" />
                 </div>
                 <div className="logo">
-                    <span className="logo-text">NINETEEN 06</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span className="logo-text">NINETEEN 06</span>
+                        <div className={`shop-status-badge ${shopStatus.calculatedStatus.toLowerCase()}`}>
+                            {shopStatus.calculatedStatus === '...' ? 'Check...' : shopStatus.calculatedStatus}
+                        </div>
+                    </div>
                     <span className="logo-subtext">Homemade Desserts</span>
                 </div>
 

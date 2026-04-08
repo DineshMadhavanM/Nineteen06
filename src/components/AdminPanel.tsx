@@ -44,10 +44,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<'users' | 'orders'>('users');
     const [deliveryTimes, setDeliveryTimes] = useState<{ [key: string]: string }>({});
     const [mapOrder, setMapOrder] = useState<Order | null>(null);
+    const [shopSettings, setShopSettings] = useState<{ manualStatus: string; calculatedStatus: string } | null>(null);
 
     useEffect(() => {
         fetchData();
+        fetchShopSettings();
     }, []);
+
+    const fetchShopSettings = async () => {
+        try {
+            const res = await fetch(apiUrl('/api/settings/status'));
+            if (res.ok) setShopSettings(await res.json());
+        } catch (err) {
+            console.error('Failed to fetch shop settings');
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -214,6 +225,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
+    const handleToggleShop = async () => {
+        if (!shopSettings) return;
+        const newStatus = shopSettings.manualStatus === 'OPEN' ? 'CLOSED' : 'OPEN';
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(apiUrl('/api/settings/toggle'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token || ''
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                setShopSettings({ manualStatus: data.manualStatus, calculatedStatus: data.calculatedStatus });
+                alert(`Shop is now manually set to ${data.manualStatus}`);
+            }
+        } catch (err) {
+            alert('Failed to toggle shop status');
+        }
+    };
+
     return (
         <>
             <div className="admin-overlay">
@@ -234,6 +270,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                             Orders/Messages
                         </button>
                     </div>
+
+                    <div className="shop-control-admin">
+                        <span className="shop-admin-label">Shop Status: </span>
+                        <div className={`status-preview ${shopSettings?.calculatedStatus.toLowerCase()}`}>
+                            {shopSettings?.calculatedStatus || '...'}
+                        </div>
+                        <button 
+                            className={`btn-shop-toggle ${shopSettings?.manualStatus === 'OPEN' ? 'open' : 'closed'}`}
+                            onClick={handleToggleShop}
+                        >
+                            {shopSettings?.manualStatus === 'OPEN' ? '🟢 OPEN' : '🔴 CLOSED'}
+                        </button>
+                    </div>
+
                     <button className="btn-close-admin" onClick={onClose}>×</button>
                 </div>
 

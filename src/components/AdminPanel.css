@@ -450,3 +450,71 @@
     display: none !important;
 }
 
+/* Shop Control Admin Styles */
+.shop-control-admin {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(47, 30, 27, 0.08);
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    margin: 0 1.5rem;
+}
+
+.shop-admin-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--chocolate);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-preview {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.status-preview.open {
+    background: var(--pistachio);
+    color: var(--chocolate);
+}
+
+.status-preview.closed {
+    background: #ff4d4d;
+    color: white;
+}
+
+.btn-shop-toggle {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.btn-shop-toggle.open {
+    background: white;
+    color: #27ae60;
+    border-color: #27ae60;
+}
+
+.btn-shop-toggle.closed {
+    background: white;
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.btn-shop-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-shop-toggle:active {
+    transform: translateY(0);
+}
+
