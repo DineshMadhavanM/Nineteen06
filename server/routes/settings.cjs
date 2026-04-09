@@ -4,8 +4,9 @@ const Settings = require('../models/Settings.cjs');
 
 // Helper to get current status based on time and manual toggle
 const getShopStatus = (manualStatus) => {
-  const now = new Date();
-  const currentHour = now.getHours();
+  // Get time in IST
+  const nowIST = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+  const currentHour = nowIST.getHours();
 
   const isDeliveryOpen = currentHour >= 9 && currentHour < 15;
   const isPickupOpen = currentHour >= 17 && currentHour < 21;
