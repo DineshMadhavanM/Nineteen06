@@ -1,15 +1,28 @@
 import React from 'react';
 import './Hero.css';
 import heroImage from '../assets/images/hero.png';
+import { useShopStatus } from '../context/ShopStatusContext';
 
 interface HeroProps {
     onOrderClick: () => void;
 }
 
 const Hero: React.FC<HeroProps> = ({ onOrderClick }) => {
+    const { status } = useShopStatus();
+    const isClosed = !status.isOpen;
+
     return (
         <section id="hero" className="hero">
             <div className="container hero-container">
+                {isClosed && (
+                    <div className="shop-status-banner">
+                        <div className="status-badge-closed">
+                            <span className="dot"></span>
+                            CLOSED NOW
+                        </div>
+                        <p>We're currently not taking orders. We'll be back at 9:00 AM!</p>
+                    </div>
+                )}
                 <div className="hero-content">
                     <div className="hero-brand-top serif">NINETEEN 06</div>
                     <h1 className="hero-main-title">1906</h1>

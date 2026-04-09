@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
-import { apiUrl } from '../lib/api';
+import { useShopStatus } from '../context/ShopStatusContext';
 
 import logoImg from '../assets/images/Logo.png';
 
@@ -26,7 +26,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, onProfileClick, onAdminClick, onMessageClick, user, onLogout }) => {
     const [isScrolled, setIsScrolled] = useState(false);
-    const [shopStatus, setShopStatus] = useState<{ calculatedStatus: string; isOpen: boolean }>({ calculatedStatus: '...', isOpen: false });
+    const { status, isLoading } = useShopStatus();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -34,25 +34,8 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
         };
         window.addEventListener('scroll', handleScroll);
         
-        // Fetch Shop Status
-        const fetchStatus = async () => {
-            try {
-                const res = await fetch(apiUrl('/api/settings/status'));
-                if (res.ok) {
-                    const data = await res.json();
-                    setShopStatus({ calculatedStatus: data.calculatedStatus, isOpen: data.isOpen });
-                }
-            } catch (err) {
-                console.error('Failed to fetch shop status');
-            }
-        };
-
-        fetchStatus();
-        const interval = setInterval(fetchStatus, 60000); // Poll every minute
-
         return () => {
             window.removeEventListener('scroll', handleScroll);
-            clearInterval(interval);
         };
     }, []);
 
@@ -65,8 +48,8 @@ const Navbar: React.FC<NavbarProps> = ({ cartCount, onCartClick, onLoginClick, o
                 <div className="logo">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span className="logo-text">NINETEEN 06</span>
-                        <div className={`shop-status-badge ${shopStatus.calculatedStatus.toLowerCase()}`}>
-                            {shopStatus.calculatedStatus === '...' ? 'Check...' : shopStatus.calculatedStatus}
+                        <div className={`shop-status-badge ${status.calculatedStatus?.toLowerCase() || '...'}`}>
+                            {isLoading ? 'Check...' : (status.calculatedStatus || '...')}
                         </div>
                     </div>
                     <span className="logo-subtext">Homemade Desserts</span>

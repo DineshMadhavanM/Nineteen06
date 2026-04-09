@@ -3,6 +3,7 @@ import './OrderFlow.css';
 import type { CartItem } from '../data/menu';
 import { apiUrl } from '../lib/api';
 import { LocationPicker } from './LocationPicker';
+import { useShopStatus } from '../context/ShopStatusContext';
 
 interface OrderFlowProps {
     cart: CartItem[];
@@ -25,7 +26,7 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [placedOrder, setPlacedOrder] = useState<any>(null);
     const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
-    const [shopStatus, setShopStatus] = useState<{ isOpen: boolean; calculatedStatus: string; reason?: string }>({ isOpen: true, calculatedStatus: 'OPEN' });
+    const { status: shopStatus } = useShopStatus();
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const packagingCharge = (cart.length > 0 && orderType === 'Now') ? 10 : 0;
@@ -80,20 +81,6 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
     };
 
     useEffect(() => {
-        // Fetch Shop Status
-        const fetchStatus = async () => {
-            try {
-                const res = await fetch(apiUrl('/api/settings/status'));
-                if (res.ok) {
-                    const data = await res.json();
-                    setShopStatus({ isOpen: data.isOpen, calculatedStatus: data.calculatedStatus, reason: data.reason });
-                }
-            } catch (err) {
-                console.error('Failed to fetch shop status');
-            }
-        };
-        fetchStatus();
-
         if (status === 'Preparing') {
             const timer = setInterval(() => {
                 setPreparationTime(prev => Math.max(0, prev - 1));

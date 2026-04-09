@@ -20,6 +20,7 @@ const getShopStatus = (manualStatus) => {
 
 // GET /api/settings/status
 router.get('/status', async (req, res) => {
+  console.log('Received status request');
   try {
     let settings = await Settings.findOne();
     if (!settings) {

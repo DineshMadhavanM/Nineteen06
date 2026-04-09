@@ -1,3 +1,52 @@
+.shop-status-banner {
+    background: rgba(43, 24, 22, 0.05);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(43, 24, 22, 0.1);
+    padding: 1.25rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.status-badge-closed {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #7c2d12;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(124, 45, 18, 0.2);
+}
+
+.status-badge-closed .dot {
+    width: 6px;
+    height: 6px;
+    background: #fb923c;
+    border-radius: 50%;
+    animation: blink 2s infinite;
+}
+
+.shop-status-banner p {
+    color: var(--chocolate);
+    font-size: 1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 .hero {
     position: relative;
     min-height: 100vh;

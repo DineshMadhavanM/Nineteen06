@@ -15,6 +15,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { MessageCenter } from './components/MessageCenter';
 import MobileBottomNav from './components/MobileBottomNav';
 import MobileFAB from './components/MobileFAB';
+import { ShopStatusProvider } from './context/ShopStatusContext';
 import { requestFirebaseNotificationPermission, messaging } from './lib/firebase';
 import { onMessage } from 'firebase/messaging';
 import type { MenuItem, CartItem } from './data/menu';
@@ -145,7 +146,8 @@ function App() {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="app">
+    <ShopStatusProvider>
+      <div className="app">
       <Navbar
         cartCount={cartCount}
         onCartClick={() => setIsOrderSystemOpen(true)}
@@ -251,6 +253,7 @@ function App() {
         <MessageCenter onClose={() => setIsMessageOpen(false)} />
       )}
     </div>
+    </ShopStatusProvider>
   );
 }
 
