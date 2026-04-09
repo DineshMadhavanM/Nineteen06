@@ -1,17 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Trending.css';
 import { menuData } from '../data/menu';
 import type { MenuItem } from '../data/menu';
 import CustomizationModal from './CustomizationModal';
-import { useState } from 'react';
+import { useShopStatus } from '../context/ShopStatusContext';
+import { apiUrl } from '../lib/api';
 
 interface TrendingProps {
     onAddToCart: (item: MenuItem, quantity?: number) => void;
+    isAdmin?: boolean;
 }
 
-const Trending: React.FC<TrendingProps> = ({ onAddToCart }) => {
+const Trending: React.FC<TrendingProps> = ({ onAddToCart, isAdmin }) => {
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { status: shopStatus, refreshStatus } = useShopStatus();
+    const outOfStockItems = shopStatus?.outOfStockItems || [];
+
+    const handleStockToggle = async (itemId: string) => {
+        try {
+            const res = await fetch(apiUrl(`/api/settings/stock/${itemId}`), { method: 'POST' });
+            if (res.ok) {
+                await refreshStatus();
+            }
+        } catch (e) {
+            console.error("Failed to toggle stock", e);
+        }
+    };
 
     // Select a few representative items since trending flag might be missing in new data
     const trendingItems = menuData.slice(0, 3);
@@ -60,7 +75,23 @@ const Trending: React.FC<TrendingProps> = ({ onAddToCart }) => {
                                 <p className="item-desc">{item.description}</p>
                                 <div className="item-footer">
                                     <span className="item-price">₹{item.price}</span>
-                                    <button className="btn-add" onClick={() => handleAddClick(item)}>Add to Order</button>
+                                    {isAdmin ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '0.8rem' }}>In Stock</span>
+                                            <label className="stock-toggle">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={!outOfStockItems.includes(item.id)} 
+                                                    onChange={() => handleStockToggle(item.id)} 
+                                                />
+                                                <span className="slider round"></span>
+                                            </label>
+                                        </div>
+                                    ) : (
+                                        outOfStockItems.includes(item.id) 
+                                        ? <span className="out-of-stock-text" style={{ color: '#d32f2f', fontWeight: 'bold' }}>Out of Stock</span>
+                                        : <button className="btn-add" onClick={() => handleAddClick(item)}>Add to Order</button>
+                                    )}
                                 </div>
                             </div>
                         </div>

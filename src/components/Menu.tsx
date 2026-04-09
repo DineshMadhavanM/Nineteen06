@@ -3,16 +3,32 @@ import './Menu.css';
 import { menuData } from '../data/menu';
 import type { MenuItem } from '../data/menu';
 import CustomizationModal from './CustomizationModal';
+import { useShopStatus } from '../context/ShopStatusContext';
+import { apiUrl } from '../lib/api';
 
 interface MenuProps {
     onAddToCart: (item: MenuItem, quantity?: number) => void;
+    isAdmin?: boolean;
 }
 
-const Menu: React.FC<MenuProps> = ({ onAddToCart }) => {
+const Menu: React.FC<MenuProps> = ({ onAddToCart, isAdmin }) => {
     const categories = ['All', ...new Set(menuData.map(item => item.category))];
     const [activeCategory, setActiveCategory] = useState('All');
     const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { status: shopStatus, refreshStatus } = useShopStatus();
+    const outOfStockItems = shopStatus?.outOfStockItems || [];
+
+    const handleStockToggle = async (itemId: string) => {
+        try {
+            const res = await fetch(apiUrl(`/api/settings/stock/${itemId}`), { method: 'POST' });
+            if (res.ok) {
+                await refreshStatus();
+            }
+        } catch (e) {
+            console.error("Failed to toggle stock", e);
+        }
+    };
 
 
     // Group items by category for the "All" view
@@ -78,7 +94,22 @@ const Menu: React.FC<MenuProps> = ({ onAddToCart }) => {
                                                     <span className="item-price">₹{item.price}</span>
 
                                                     {!['Snacks', 'Refreshing spl', 'Mojito'].includes(item.category) && (
-                                                        <button className="add-btn-mini" onClick={() => handleAddClick(item)}>+</button>
+                                                        <>
+                                                            {isAdmin ? (
+                                                                <label className="stock-toggle">
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={!outOfStockItems.includes(item.id)} 
+                                                                        onChange={() => handleStockToggle(item.id)} 
+                                                                    />
+                                                                    <span className="slider round"></span>
+                                                                </label>
+                                                            ) : (
+                                                                outOfStockItems.includes(item.id) 
+                                                                ? <span className="out-of-stock-text" style={{ color: '#d32f2f', fontSize: '0.8rem', fontWeight: 'bold' }}>Out of Stock</span>
+                                                                : <button className="add-btn-mini" onClick={() => handleAddClick(item)}>+</button>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
                                                 <p className="item-desc">{item.description}</p>

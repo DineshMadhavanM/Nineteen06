@@ -7,6 +7,7 @@ interface ShopStatus {
   isPickupOpen?: boolean;
   calculatedStatus: 'OPEN' | 'CLOSED' | null;
   reason?: string;
+  outOfStockItems?: string[];
 }
 
 interface ShopStatusContextType {
@@ -37,7 +38,8 @@ export const ShopStatusProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           isDeliveryOpen: data.isDeliveryOpen,
           isPickupOpen: data.isPickupOpen,
           calculatedStatus: data.calculatedStatus,
-          reason: data.reason
+          reason: data.reason,
+          outOfStockItems: data.outOfStockItems || []
         });
         setError(null);
       } else {

@@ -9,6 +9,10 @@ const settingsSchema = new mongoose.Schema({
   shopName: {
     type: String,
     default: 'Nineteen06'
+  },
+  outOfStockItems: {
+    type: [String],
+    default: []
   }
 }, { timestamps: true });
 

@@ -171,9 +171,10 @@ function App() {
           menuSection?.scrollIntoView({ behavior: 'smooth' });
         }} />
 
-        <Trending onAddToCart={addToCart} />
+        <Trending onAddToCart={addToCart} isAdmin={!!user?.isAdmin} />
         <Menu
           onAddToCart={addToCart}
+          isAdmin={!!user?.isAdmin}
         />
         <WhyChooseUs />
         <AboutUs />

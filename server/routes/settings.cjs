@@ -35,7 +35,8 @@ router.get('/status', async (req, res) => {
       isOpen: shopStatusData.status === 'OPEN',
       isDeliveryOpen: shopStatusData.isDeliveryOpen,
       isPickupOpen: shopStatusData.isPickupOpen,
-      timeWindow: 'Delivery: 09:00 - 15:00 | Pickup: 17:00 - 21:00'
+      timeWindow: 'Delivery: 09:00 - 15:00 | Pickup: 17:00 - 21:00',
+      outOfStockItems: settings.outOfStockItems || []
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -63,8 +64,34 @@ router.post('/toggle', async (req, res) => {
       calculatedStatus: shopStatusData.status,
       isOpen: shopStatusData.status === 'OPEN',
       isDeliveryOpen: shopStatusData.isDeliveryOpen,
-      isPickupOpen: shopStatusData.isPickupOpen
+      isPickupOpen: shopStatusData.isPickupOpen,
+      outOfStockItems: settings.outOfStockItems || []
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/settings/stock/:itemId
+router.post('/stock/:itemId', async (req, res) => {
+  const { itemId } = req.params;
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) settings = new Settings();
+
+    const stockItems = settings.outOfStockItems || [];
+    const index = stockItems.indexOf(itemId);
+    
+    if (index === -1) {
+      stockItems.push(itemId); // Mark out of stock
+    } else {
+      stockItems.splice(index, 1); // Mark in stock
+    }
+
+    settings.outOfStockItems = stockItems;
+    await settings.save();
+
+    res.json({ outOfStockItems: settings.outOfStockItems });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
