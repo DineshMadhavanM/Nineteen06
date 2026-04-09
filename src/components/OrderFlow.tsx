@@ -28,6 +28,12 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
     const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
     const { status: shopStatus } = useShopStatus();
 
+    useEffect(() => {
+        if (shopStatus && shopStatus.isDeliveryOpen === false && shopStatus.isPickupOpen === true) {
+            setOrderType('Pre-Order');
+        }
+    }, [shopStatus.isDeliveryOpen, shopStatus.isPickupOpen]);
+
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const packagingCharge = (cart.length > 0 && orderType === 'Now') ? 10 : 0;
     const total = subtotal + packagingCharge;
@@ -105,7 +111,7 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                             <p className="closed-reason">{shopStatus.reason || 'We are currently not accepting orders.'}</p>
                             <div className="hours-hint">
                                 <p>Operational Hours:</p>
-                                <strong>09:00 AM - 03:00 PM</strong>
+                                <strong>Delivery: 09:00 AM - 03:00 PM<br/>Pickup: 05:00 PM - 09:00 PM</strong>
                             </div>
                             <button className="btn-primary-sm" onClick={onClose} style={{ marginTop: '1.5rem' }}>Keep Browsing</button>
                         </div>
@@ -160,6 +166,16 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                             Pre-order Pickup
                                         </button>
                                     </div>
+                                    {!shopStatus.isDeliveryOpen && orderType === 'Now' && (
+                                        <p className="status-desc" style={{ color: '#d32f2f', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                                            Delivery is only available from 09:00 AM to 03:00 PM.
+                                        </p>
+                                    )}
+                                    {!shopStatus.isPickupOpen && orderType === 'Pre-Order' && (
+                                        <p className="status-desc" style={{ color: '#d32f2f', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                                            Pickup is only available from 05:00 PM to 09:00 PM.
+                                        </p>
+                                    )}
 
                                     {orderType === 'Pre-Order' && (
                                         <div className="time-selector">
@@ -240,7 +256,7 @@ export const OrderFlow: React.FC<OrderFlowProps> = ({ cart, onClose, onRemove, o
                                 <button
                                     className="btn-checkout"
                                     onClick={handlePlaceOrder}
-                                    disabled={isSubmitting}
+                                    disabled={isSubmitting || (orderType === 'Now' && !shopStatus.isDeliveryOpen) || (orderType === 'Pre-Order' && !shopStatus.isPickupOpen)}
                                 >
                                     {isSubmitting ? 'Processing...' : 'Place Order Now'}
                                 </button>

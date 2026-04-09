@@ -3,6 +3,8 @@ import { apiUrl } from '../lib/api';
 
 interface ShopStatus {
   isOpen: boolean;
+  isDeliveryOpen?: boolean;
+  isPickupOpen?: boolean;
   calculatedStatus: 'OPEN' | 'CLOSED' | null;
   reason?: string;
 }
@@ -32,6 +34,8 @@ export const ShopStatusProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const data = await res.json();
         setStatus({
           isOpen: data.isOpen,
+          isDeliveryOpen: data.isDeliveryOpen,
+          isPickupOpen: data.isPickupOpen,
           calculatedStatus: data.calculatedStatus,
           reason: data.reason
         });

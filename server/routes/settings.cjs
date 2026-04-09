@@ -4,18 +4,18 @@ const Settings = require('../models/Settings.cjs');
 
 // Helper to get current status based on time and manual toggle
 const getShopStatus = (manualStatus) => {
-  if (manualStatus === 'CLOSED') return 'CLOSED';
-
   const now = new Date();
   const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
+
+  const isDeliveryOpen = currentHour >= 9 && currentHour < 15;
+  const isPickupOpen = currentHour >= 17 && currentHour < 21;
+  const isOpen = (isDeliveryOpen || isPickupOpen) && manualStatus !== 'CLOSED';
   
-  // 9:00 AM to 3:00 PM (15:00)
-  if (currentHour >= 9 && currentHour < 15) {
-    return 'OPEN';
-  }
-  
-  return 'CLOSED';
+  return {
+    status: manualStatus === 'CLOSED' ? 'CLOSED' : (isOpen ? 'OPEN' : 'CLOSED'),
+    isDeliveryOpen: manualStatus === 'CLOSED' ? false : isDeliveryOpen,
+    isPickupOpen: manualStatus === 'CLOSED' ? false : isPickupOpen
+  };
 };
 
 // GET /api/settings/status
@@ -27,13 +27,15 @@ router.get('/status', async (req, res) => {
       settings = await Settings.create({ manualStatus: 'OPEN' });
     }
 
-    const calculatedStatus = getShopStatus(settings.manualStatus);
+    const shopStatusData = getShopStatus(settings.manualStatus);
 
     res.json({
       manualStatus: settings.manualStatus,
-      calculatedStatus: calculatedStatus,
-      isOpen: calculatedStatus === 'OPEN',
-      timeWindow: '09:00 - 15:00'
+      calculatedStatus: shopStatusData.status,
+      isOpen: shopStatusData.status === 'OPEN',
+      isDeliveryOpen: shopStatusData.isDeliveryOpen,
+      isPickupOpen: shopStatusData.isPickupOpen,
+      timeWindow: 'Delivery: 09:00 - 15:00 | Pickup: 17:00 - 21:00'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,11 +57,13 @@ router.post('/toggle', async (req, res) => {
     settings.manualStatus = status;
     await settings.save();
 
-    const calculatedStatus = getShopStatus(settings.manualStatus);
+    const shopStatusData = getShopStatus(settings.manualStatus);
     res.json({
       manualStatus: settings.manualStatus,
-      calculatedStatus: calculatedStatus,
-      isOpen: calculatedStatus === 'OPEN'
+      calculatedStatus: shopStatusData.status,
+      isOpen: shopStatusData.status === 'OPEN',
+      isDeliveryOpen: shopStatusData.isDeliveryOpen,
+      isPickupOpen: shopStatusData.isPickupOpen
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
