@@ -66,11 +66,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
     useEffect(() => { playAlarmRef.current = playAlarm; }, [playAlarm]);
     useEffect(() => { isAlarmActiveRef.current = isAlarmActive; }, [isAlarmActive]);
 
+    // Track which order IDs have already triggered the alarm (persists across re-opens in same session)
+    const getAlarmedIds = () => {
+        try { return new Set(JSON.parse(sessionStorage.getItem('alarmedOrderIds') || '[]')); }
+        catch { return new Set<string>(); }
+    };
+    const markAlarmed = (ids: string[]) => {
+        try {
+            const existing = getAlarmedIds();
+            ids.forEach(id => existing.add(id));
+            sessionStorage.setItem('alarmedOrderIds', JSON.stringify([...existing]));
+        } catch {}
+    };
+
     // Stop alarm when clicking anywhere in the admin panel
     const handlePanelClick = () => {
         if (isAlarmActive) {
             stopAlarm();
         }
+    };
+
+    // Remove a single order ID from the alarmed-IDs list when dealt with
+    const clearAlarmedId = (orderId: string) => {
+        try {
+            const existing = getAlarmedIds();
+            existing.delete(orderId);
+            sessionStorage.setItem('alarmedOrderIds', JSON.stringify([...existing]));
+        } catch {}
     };
 
     useEffect(() => {
@@ -112,12 +134,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
                     .filter(o => o.status === 'Pending')
                     .map(o => o._id);
                 
-                const hasNewOrder = currentPendingIds.some(id => !lastPendingOrderIds.current.has(id));
-                
-                // Fallback Alarm Logic: use refs to get latest values & skip first load
-                if (isPoll && hasNewOrder && !isAlarmActiveRef.current) {
-                    console.log('Alarm fallback triggered by polling');
-                    playAlarmRef.current();
+                // Find pending orders that have NOT yet triggered the alarm
+                const alarmedIds = getAlarmedIds();
+                const unalarmedPendingIds = currentPendingIds.filter(id => !alarmedIds.has(id));
+
+                if (unalarmedPendingIds.length > 0 && !isAlarmActiveRef.current) {
+                    if (isPoll) {
+                        // Immediate on polls
+                        console.log('Alarm triggered by polling for new order(s)');
+                        playAlarmRef.current();
+                    } else {
+                        // On first panel open: small delay to let audio context initialize from the tap gesture
+                        console.log('Alarm triggered on panel open — pending orders found');
+                        setTimeout(() => {
+                            if (!isAlarmActiveRef.current) playAlarmRef.current();
+                        }, 600);
+                    }
+                    markAlarmed(unalarmedPendingIds);
                 }
                 
                 // Update tracked IDs
@@ -151,6 +184,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
             });
 
             if (response.ok) {
+                stopAlarm();
+                clearAlarmedId(orderId);
                 fetchData();
                 alert('Order confirmed and message sent to customer!');
             } else {
@@ -222,7 +257,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
                 method: 'PUT',
                 headers: { 'x-auth-token': token || '' }
             });
-            if (res.ok) { fetchData(); alert('Order rejected and customer notified.'); }
+            if (res.ok) { stopAlarm(); clearAlarmedId(orderId); fetchData(); alert('Order rejected and customer notified.'); }
             else alert('Reject failed');
         } catch (err) { alert('Request error'); }
     };
