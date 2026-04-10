@@ -199,7 +199,7 @@ function App() {
         onCartClick={() => setIsOrderSystemOpen(true)}
         onLoginClick={() => setIsAuthOpen(true)}
         onProfileClick={() => setIsProfileOpen(true)}
-        onAdminClick={() => setIsAdminOpen(true)}
+        onAdminClick={() => { stopAlarm(); setIsAdminOpen(true); }}
         onMessageClick={() => setIsMessageOpen(true)}
         user={user}
         onLogout={handleLogout}
@@ -212,8 +212,9 @@ function App() {
       )}
 
       {isAlarmActive && (
-        <div className="global-alarm-banner" onClick={stopAlarm}>
-          🔔 NEW ORDER RECEIVED! <button className="btn-stop-alarm">STOP ALARM</button>
+        <div className="global-alarm-banner" onClick={() => { stopAlarm(); if (user?.isAdmin) setIsAdminOpen(true); }}>
+          🔔 NEW ORDER! — <strong>Tap to open Admin Panel</strong>
+          <button className="btn-stop-alarm">STOP ALARM</button>
         </div>
       )}
 
@@ -241,7 +242,7 @@ function App() {
         onCartClick={() => setIsOrderSystemOpen(true)}
         onHomeClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         onMenuClick={() => document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })}
-        onAdminClick={() => setIsAdminOpen(true)}
+        onAdminClick={() => { stopAlarm(); setIsAdminOpen(true); }}
         onMessageClick={() => setIsMessageOpen(true)}
         isAdmin={!!user?.isAdmin}
         onProfileClick={() => {

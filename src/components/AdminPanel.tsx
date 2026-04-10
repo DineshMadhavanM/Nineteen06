@@ -96,6 +96,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
     };
 
     useEffect(() => {
+        // Stop alarm as soon as admin panel opens
+        stopAlarm();
+
         fetchData();
         fetchShopSettings();
 
