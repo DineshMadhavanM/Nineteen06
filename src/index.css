@@ -183,3 +183,54 @@ button {
     text-align: center;
   }
 }
+
+.global-alarm-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #e74c3c;
+  color: white;
+  padding: 1rem;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+  animation: slideDown 0.4s ease-out, globalAlarmPulse 1s infinite alternate;
+  cursor: pointer;
+}
+
+.btn-stop-alarm {
+  background: white;
+  color: #e74c3c;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes globalAlarmPulse {
+  from { background-color: #e74c3c; }
+  to { background-color: #c0392b; }
+}
+
+@media (max-width: 768px) {
+  .global-alarm-banner {
+    font-size: 0.9rem;
+    padding: 0.8rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

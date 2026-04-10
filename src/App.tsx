@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Trending from './components/Trending';
@@ -43,6 +43,44 @@ function App() {
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [notification, setNotification] = useState<{ message: string, type: 'info' | 'success' } | null>(null);
+  const [isAlarmActive, setIsAlarmActive] = useState(false);
+  const [isAudioAllowed, setIsAudioAllowed] = useState(false);
+  const audioRef = useState<HTMLAudioElement | null>(() => {
+    const audio = new Audio('/notification.mpeg');
+    audio.loop = true;
+    return audio;
+  })[0];
+
+  const playAlarm = useCallback(() => {
+    if (audioRef) {
+      audioRef.play()
+        .then(() => setIsAudioAllowed(true))
+        .catch(err => {
+          console.warn('Audio play blocked:', err);
+          setIsAudioAllowed(false);
+        });
+      setIsAlarmActive(true);
+    }
+  }, [audioRef]);
+
+  const stopAlarm = useCallback(() => {
+    if (audioRef) {
+      audioRef.pause();
+      audioRef.currentTime = 0;
+    }
+    setIsAlarmActive(false);
+  }, [audioRef]);
+
+  const testAlarm = useCallback(() => {
+    if (audioRef) {
+      audioRef.play().then(() => {
+        setTimeout(() => {
+          audioRef.pause();
+          audioRef.currentTime = 0;
+        }, 2000);
+      }).catch(() => setIsAudioAllowed(false));
+    }
+  }, [audioRef]);
 
   // Helper to enrich user with computed isAdmin from email
   const enrichUser = (u: User): User => {
@@ -86,12 +124,20 @@ function App() {
     try {
       const unsubscribe = onMessage(messaging, (payload) => {
         console.log('Foreground Push Notification Received:', payload);
+        console.log('Current user at notification time:', user?.email, 'isAdmin:', user?.isAdmin);
+        
+        // Trigger Alarm if it's a new order notification and user is admin
+        const title = payload.notification?.title || '';
+        if ((title.includes('New Order') || title.includes('Order Received')) && user?.isAdmin) {
+          console.log('Playing alarm for admin!');
+          playAlarm();
+        }
+
         if (payload.notification?.body) {
           setNotification({ 
             message: payload.notification.title ? `${payload.notification.title} - ${payload.notification.body}` : payload.notification.body, 
             type: 'info' 
           });
-          // Hide toast after a longer duration so they can read it
           setTimeout(() => setNotification(null), 8000);
         }
       });
@@ -99,7 +145,7 @@ function App() {
     } catch (err) {
       console.log('FCM onMessage listener setup failed', err);
     }
-  }, []);
+  }, [user, playAlarm]);
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     setCart(prevCart => {
@@ -162,6 +208,12 @@ function App() {
       {notification && (
         <div className={`global-notification ${notification.type}`}>
           {notification.message}
+        </div>
+      )}
+
+      {isAlarmActive && (
+        <div className="global-alarm-banner" onClick={stopAlarm}>
+          🔔 NEW ORDER RECEIVED! <button className="btn-stop-alarm">STOP ALARM</button>
         </div>
       )}
 
@@ -247,6 +299,11 @@ function App() {
       {isAdminOpen && user?.isAdmin && (
         <AdminPanel
           onClose={() => setIsAdminOpen(false)}
+          isAlarmActive={isAlarmActive}
+          stopAlarm={stopAlarm}
+          isAudioAllowed={isAudioAllowed}
+          testAlarm={testAlarm}
+          playAlarm={playAlarm}
         />
       )}
 

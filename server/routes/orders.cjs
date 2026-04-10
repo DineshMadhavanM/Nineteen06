@@ -39,14 +39,19 @@ router.post('/', auth, async (req, res) => {
             settings = await Settings.create({ manualStatus: 'OPEN' });
         }
 
+        // Convert current time to IST (UTC+5:30) explicitly
         const now = new Date();
-        const currentHour = now.getHours();
-        
-        const isWithinTimeWindow = currentHour >= 9 && currentHour < 15;
+        const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in ms
+        const istNow = new Date(now.getTime() + IST_OFFSET_MS);
+        const currentHour = istNow.getUTCHours(); // Use getUTCHours on the shifted time
+
+        const isWithinTimeWindow = currentHour >= 9 && currentHour < 21;
         const isManuallyOpen = settings.manualStatus === 'OPEN';
 
+        console.log(`Order check: IST hour=${currentHour}, manualStatus=${settings.manualStatus}, withinWindow=${isWithinTimeWindow}`);
+
         if (!isManuallyOpen || !isWithinTimeWindow) {
-            let reason = !isManuallyOpen ? 'The shop is manually closed by the owner.' : 'Ordering is only available between 9:00 AM and 3:00 PM.';
+            let reason = !isManuallyOpen ? 'The shop is manually closed by the owner.' : 'Ordering is only available between 9:00 AM and 9:00 PM IST.';
             return res.status(403).json({ 
                 message: 'Ordering is currently unavailable.',
                 reason: reason,
@@ -78,23 +83,41 @@ router.post('/', auth, async (req, res) => {
         if (req.firebaseAdmin) {
             try {
                 const admins = await User.find({ email: { $in: ADMIN_EMAILS } });
-                const adminTokens = admins.flatMap(admin => admin.fcmTokens).filter(Boolean);
+                const uniqueTokens = [...new Set(admins.flatMap(admin => admin.fcmTokens).filter(Boolean))];
 
-                if (adminTokens.length > 0) {
-                    console.log(`FCM: Sending new order notification to ${adminTokens.length} admin tokens.`);
+                if (uniqueTokens.length > 0) {
+                    console.log(`FCM: Sending new order notification to ${uniqueTokens.length} admin tokens.`);
                     const message = {
                         notification: {
                             title: '🌟 New Order Received!',
                             body: `${user.username || 'A customer'} placed an order for ₹${totalAmount}.`,
                         },
-                        tokens: [...new Set(adminTokens)],
+                        tokens: uniqueTokens,
                     };
                     const response = await req.firebaseAdmin.messaging().sendEachForMulticast(message);
-                    console.log(`FCM: Push notification successful. Success count: ${response.successCount}, Failure count: ${response.failureCount}`);
+                    console.log(`FCM: Push notification successful. Success: ${response.successCount}, Failure: ${response.failureCount}`);
+
+                    // Auto-cleanup stale/invalid tokens
                     if (response.failureCount > 0) {
+                        const staleTokens = [];
                         response.responses.forEach((resp, idx) => {
-                            if (!resp.success) console.error(`FCM: Token at index ${idx} failed:`, resp.error);
+                            if (!resp.success) {
+                                const errCode = resp.error?.code || '';
+                                console.warn(`FCM: Token [${idx}] failed: ${errCode}`);
+                                if (errCode === 'messaging/registration-token-not-registered' ||
+                                    errCode === 'messaging/invalid-registration-token') {
+                                    staleTokens.push(uniqueTokens[idx]);
+                                }
+                            }
                         });
+
+                        if (staleTokens.length > 0) {
+                            console.log(`FCM: Removing ${staleTokens.length} stale tokens from DB.`);
+                            await User.updateMany(
+                                { email: { $in: ADMIN_EMAILS } },
+                                { $pull: { fcmTokens: { $in: staleTokens } } }
+                            );
+                        }
                     }
                 } else {
                     console.warn('FCM: No admin tokens found to notify.');

@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AdminPanel.css';
 import { apiUrl } from '../lib/api';
 // Routing Map Imports
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { menuData } from '../data/menu';
+import { useShopStatus } from '../context/ShopStatusContext';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface AdminPanelProps {
     onClose: () => void;
+    isAlarmActive: boolean;
+    stopAlarm: () => void;
+    isAudioAllowed: boolean;
+    testAlarm: () => void;
+    playAlarm: () => void;
 }
 
 interface UserData {
@@ -37,18 +44,45 @@ interface Order {
     createdAt: string;
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, stopAlarm, isAudioAllowed, testAlarm, playAlarm }) => {
     const [users, setUsers] = useState<UserData[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'users' | 'orders'>('users');
+    const [activeTab, setActiveTab] = useState<'users' | 'orders' | 'menu'>('users');
     const [deliveryTimes, setDeliveryTimes] = useState<{ [key: string]: string }>({});
     const [mapOrder, setMapOrder] = useState<Order | null>(null);
     const [shopSettings, setShopSettings] = useState<{ manualStatus: string; calculatedStatus: string } | null>(null);
+    const [showUnlockBanner, setShowUnlockBanner] = useState(!isAudioAllowed);
+    
+    // For Menu Management
+    const [activeCategory, setActiveCategory] = useState('All');
+    const { status: shopStatusLive, refreshStatus } = useShopStatus();
+    const categories = ['All', ...new Set(menuData.map(item => item.category))];
+    
+    const lastPendingOrderIds = useRef<Set<string>>(new Set());
+    // Use refs to avoid stale closures inside setInterval
+    const playAlarmRef = useRef(playAlarm);
+    const isAlarmActiveRef = useRef(isAlarmActive);
+    useEffect(() => { playAlarmRef.current = playAlarm; }, [playAlarm]);
+    useEffect(() => { isAlarmActiveRef.current = isAlarmActive; }, [isAlarmActive]);
+
+    // Stop alarm when clicking anywhere in the admin panel
+    const handlePanelClick = () => {
+        if (isAlarmActive) {
+            stopAlarm();
+        }
+    };
 
     useEffect(() => {
         fetchData();
         fetchShopSettings();
+
+        // Polling for new orders every 10 seconds
+        const pollInterval = setInterval(() => {
+            fetchData(true); // true indicates a background poll
+        }, 10000);
+
+        return () => clearInterval(pollInterval);
     }, []);
 
     const fetchShopSettings = async () => {
@@ -60,8 +94,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (isPoll = false) => {
+        if (!isPoll) setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const [usersRes, ordersRes] = await Promise.all([
@@ -70,7 +104,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
             ]);
 
             if (usersRes.ok) setUsers(await usersRes.json());
-            if (ordersRes.ok) setOrders(await ordersRes.json());
+            if (ordersRes.ok) {
+                const fetchedOrders: Order[] = await ordersRes.json();
+                
+                // --- Alarm Logic ---
+                const currentPendingIds = fetchedOrders
+                    .filter(o => o.status === 'Pending')
+                    .map(o => o._id);
+                
+                const hasNewOrder = currentPendingIds.some(id => !lastPendingOrderIds.current.has(id));
+                
+                // Fallback Alarm Logic: use refs to get latest values & skip first load
+                if (isPoll && hasNewOrder && !isAlarmActiveRef.current) {
+                    console.log('Alarm fallback triggered by polling');
+                    playAlarmRef.current();
+                }
+                
+                // Update tracked IDs
+                lastPendingOrderIds.current = new Set(currentPendingIds);
+                
+                setOrders(fetchedOrders);
+            }
         } catch (err) {
             console.error('Fetch error');
         } finally {
@@ -225,6 +279,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
         }
     };
 
+    const handleStockToggle = async (itemId: string) => {
+        try {
+            const res = await fetch(apiUrl(`/api/settings/stock/${itemId}`), { method: 'POST' });
+            if (res.ok) {
+                await refreshStatus();
+                // Also update local shopSettings if we want to stay in sync
+                fetchShopSettings();
+            }
+        } catch (e) {
+            console.error("Failed to toggle stock", e);
+        }
+    };
+
     const handleToggleShop = async () => {
         if (!shopSettings) return;
         const newStatus = shopSettings.manualStatus === 'OPEN' ? 'CLOSED' : 'OPEN';
@@ -252,10 +319,39 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
     return (
         <>
-            <div className="admin-overlay">
-            <div className="admin-modal">
+            {/* Audio Unlock Banner — shown once until user interacts */}
+            {showUnlockBanner && !isAudioAllowed && (
+                <div
+                    className="audio-unlock-banner"
+                    onClick={() => {
+                        testAlarm();
+                        setShowUnlockBanner(false);
+                    }}
+                >
+                    🔔 Tap here to enable order alarm audio
+                </div>
+            )}
+            <div className="admin-overlay" onClick={handlePanelClick}>
+            <div className="admin-modal" onClick={e => e.stopPropagation()}>
                 <div className="admin-header">
-                    <h2 className="serif">Admin Dashboard</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <h2 className="serif">Admin Dashboard</h2>
+                        
+                        <div className="admin-audio-controls">
+                            <span className={`audio-status-tag ${isAudioAllowed ? 'unlocked' : 'locked'}`}>
+                                {isAudioAllowed ? '🔊 Audio ON' : '🔇 Audio Locked'}
+                            </span>
+                            <button className="btn-test-sound" onClick={testAlarm}>
+                                🔊 Test Alarm
+                            </button>
+                        </div>
+
+                        {isAlarmActive && (
+                            <div className="alarm-banner" onClick={stopAlarm}>
+                                🔔 NEW ORDER! <button className="btn-stop-alarm">STOP ALARM</button>
+                            </div>
+                        )}
+                    </div>
                     <div className="admin-tabs">
                         <button
                             className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
@@ -268,6 +364,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                             onClick={() => setActiveTab('orders')}
                         >
                             Orders/Messages
+                        </button>
+                        <button
+                            className={`tab-btn ${activeTab === 'menu' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('menu')}
+                        >
+                            Menu Management
                         </button>
                     </div>
 
@@ -327,7 +429,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                 </tbody>
                             </table>
                         </div>
-                    ) : (
+                    ) : activeTab === 'orders' ? (
                         <div className="orders-container">
                             <h3 className="serif" style={{ marginBottom: '1rem', color: 'var(--chocolate)' }}>Active Orders</h3>
                             <table className="admin-table">
@@ -484,6 +586,60 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
                                                 </td>
                                             </tr>
                                         ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="admin-menu-management">
+                            <div className="admin-category-tabs">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        className={`admin-cat-bubble ${activeCategory === cat ? 'active' : ''}`}
+                                        onClick={() => setActiveCategory(cat)}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div className="table-container">
+                                <table className="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Category</th>
+                                            <th>Price</th>
+                                            <th>Stock Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {menuData
+                                            .filter(item => activeCategory === 'All' || item.category === activeCategory)
+                                            .map(item => (
+                                                <tr key={item.id}>
+                                                    <td data-label="Item Name">
+                                                        <strong>{item.name}</strong>
+                                                        <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>{item.id}</div>
+                                                    </td>
+                                                    <td data-label="Category">{item.category}</td>
+                                                    <td data-label="Price">₹{item.price}</td>
+                                                    <td data-label="Stock Status">
+                                                        <label className="admin-stock-switch">
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={!shopStatusLive?.outOfStockItems?.includes(item.id)} 
+                                                                onChange={() => handleStockToggle(item.id)}
+                                                            />
+                                                            <span className="stock-slider round"></span>
+                                                        </label>
+                                                        <span style={{ marginLeft: '0.8rem', fontSize: '0.85rem', fontWeight: 600, color: shopStatusLive?.outOfStockItems?.includes(item.id) ? '#e74c3c' : '#27ae60' }}>
+                                                            {shopStatusLive?.outOfStockItems?.includes(item.id) ? 'OUT OF STOCK' : 'IN STOCK'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                     </tbody>
                                 </table>
                             </div>
