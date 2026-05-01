@@ -147,6 +147,55 @@ function App() {
     }
   }, [user, playAlarm]);
 
+  // Order Polling for Alarm (Persistent for Admins)
+  useEffect(() => {
+    if (!user?.isAdmin) return;
+
+    const getAlarmedIds = () => {
+      try { return new Set(JSON.parse(sessionStorage.getItem('alarmedOrderIds') || '[]')); }
+      catch { return new Set<string>(); }
+    };
+    
+    const markAlarmed = (ids: string[]) => {
+      try {
+        const existing = getAlarmedIds();
+        ids.forEach(id => existing.add(id));
+        sessionStorage.setItem('alarmedOrderIds', JSON.stringify([...existing]));
+      } catch {}
+    };
+
+    const fetchOrdersForAlarm = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(apiUrl('/api/orders/admin'), {
+          headers: { 'x-auth-token': token || '' }
+        });
+
+        if (response.ok) {
+          const orders: any[] = await response.json();
+          const pendingIds = orders.filter(o => o.status === 'Pending').map(o => o._id);
+          
+          const alarmedIds = getAlarmedIds();
+          const unalarmedPendingIds = pendingIds.filter(id => !alarmedIds.has(id));
+
+          if (unalarmedPendingIds.length > 0 && !isAlarmActive) {
+            console.log('Order Polling: New unalarmed orders found, playing alarm!');
+            playAlarm();
+            markAlarmed(unalarmedPendingIds);
+          }
+        }
+      } catch (err) {
+        console.error('Order polling failed', err);
+      }
+    };
+
+    // Initial check
+    fetchOrdersForAlarm();
+
+    const interval = setInterval(fetchOrdersForAlarm, 15000); // 15s polling
+    return () => clearInterval(interval);
+  }, [user, isAlarmActive, playAlarm]);
+
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     setCart(prevCart => {
       // For customizable items, we check if the same item with SAME options exists
@@ -304,7 +353,6 @@ function App() {
           stopAlarm={stopAlarm}
           isAudioAllowed={isAudioAllowed}
           testAlarm={testAlarm}
-          playAlarm={playAlarm}
         />
       )}
 

@@ -45,6 +45,34 @@
     font-size: 2rem;
     color: var(--chocolate);
     opacity: 0.8;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.btn-back-admin {
+    background: var(--chocolate);
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(47, 30, 27, 0.2);
+}
+
+.btn-back-admin:hover {
+    background: var(--caramel);
+    transform: translateX(-3px);
+    box-shadow: 0 6px 16px rgba(47, 30, 27, 0.3);
+}
+
+.btn-back-admin:active {
+    transform: translateX(0);
 }
 
 .admin-content {

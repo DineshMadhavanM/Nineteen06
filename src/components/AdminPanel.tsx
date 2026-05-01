@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminPanel.css';
 import { apiUrl } from '../lib/api';
 // Routing Map Imports
@@ -14,7 +14,6 @@ interface AdminPanelProps {
     stopAlarm: () => void;
     isAudioAllowed: boolean;
     testAlarm: () => void;
-    playAlarm: () => void;
 }
 
 interface UserData {
@@ -44,7 +43,7 @@ interface Order {
     createdAt: string;
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, stopAlarm, isAudioAllowed, testAlarm, playAlarm }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, stopAlarm, isAudioAllowed, testAlarm }) => {
     const [users, setUsers] = useState<UserData[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -59,24 +58,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
     const { status: shopStatusLive, refreshStatus } = useShopStatus();
     const categories = ['All', ...new Set(menuData.map(item => item.category))];
     
-    const lastPendingOrderIds = useRef<Set<string>>(new Set());
-    // Use refs to avoid stale closures inside setInterval
-    const playAlarmRef = useRef(playAlarm);
-    const isAlarmActiveRef = useRef(isAlarmActive);
-    useEffect(() => { playAlarmRef.current = playAlarm; }, [playAlarm]);
-    useEffect(() => { isAlarmActiveRef.current = isAlarmActive; }, [isAlarmActive]);
-
-    // Track which order IDs have already triggered the alarm (persists across re-opens in same session)
+    // Polling logic removed — App.tsx now handles global order alarm polling
     const getAlarmedIds = () => {
         try { return new Set(JSON.parse(sessionStorage.getItem('alarmedOrderIds') || '[]')); }
         catch { return new Set<string>(); }
-    };
-    const markAlarmed = (ids: string[]) => {
-        try {
-            const existing = getAlarmedIds();
-            ids.forEach(id => existing.add(id));
-            sessionStorage.setItem('alarmedOrderIds', JSON.stringify([...existing]));
-        } catch {}
     };
 
     // Stop alarm when clicking anywhere in the admin panel
@@ -102,12 +87,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
         fetchData();
         fetchShopSettings();
 
-        // Polling for new orders every 10 seconds
-        const pollInterval = setInterval(() => {
-            fetchData(true); // true indicates a background poll
-        }, 10000);
-
-        return () => clearInterval(pollInterval);
+        // Polling removed — App.tsx handles global order alarm polling now
+        return () => {};
     }, []);
 
     const fetchShopSettings = async () => {
@@ -131,34 +112,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
             if (usersRes.ok) setUsers(await usersRes.json());
             if (ordersRes.ok) {
                 const fetchedOrders: Order[] = await ordersRes.json();
-                
-                // --- Alarm Logic ---
-                const currentPendingIds = fetchedOrders
-                    .filter(o => o.status === 'Pending')
-                    .map(o => o._id);
-                
-                // Find pending orders that have NOT yet triggered the alarm
-                const alarmedIds = getAlarmedIds();
-                const unalarmedPendingIds = currentPendingIds.filter(id => !alarmedIds.has(id));
-
-                if (unalarmedPendingIds.length > 0 && !isAlarmActiveRef.current) {
-                    if (isPoll) {
-                        // Immediate on polls
-                        console.log('Alarm triggered by polling for new order(s)');
-                        playAlarmRef.current();
-                    } else {
-                        // On first panel open: small delay to let audio context initialize from the tap gesture
-                        console.log('Alarm triggered on panel open — pending orders found');
-                        setTimeout(() => {
-                            if (!isAlarmActiveRef.current) playAlarmRef.current();
-                        }, 600);
-                    }
-                    markAlarmed(unalarmedPendingIds);
-                }
-                
-                // Update tracked IDs
-                lastPendingOrderIds.current = new Set(currentPendingIds);
-                
                 setOrders(fetchedOrders);
             }
         } catch (err) {
@@ -373,6 +326,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, isAlarmActive, 
             <div className="admin-modal" onClick={e => e.stopPropagation()}>
                 <div className="admin-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button className="btn-back-admin" onClick={onClose} title="Back to Website">
+                            ← Back
+                        </button>
                         <h2 className="serif">Admin Dashboard</h2>
                         
                         <div className="admin-audio-controls">
