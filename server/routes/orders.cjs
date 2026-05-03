@@ -79,6 +79,52 @@ router.post('/', auth, async (req, res) => {
 
         const savedOrder = await newOrder.save();
 
+        // --- Notify n8n Webhook (WhatsApp via Twilio) ---
+        try {
+            const n8nWebhookUrl = 'http://localhost:5678/webhook/food-order';
+            console.log(`n8n: Sending webhook notification for order ${savedOrder._id}`);
+            const response = await fetch(n8nWebhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderId: savedOrder._id,
+                    customerName: savedOrder.customerName,
+                    customerEmail: savedOrder.customerEmail,
+                    customerPhone: savedOrder.customerPhone,
+                    totalAmount: savedOrder.totalAmount,
+                    items: savedOrder.items,
+                    address: savedOrder.address,
+                    instructions: savedOrder.instructions,
+                    timestamp: savedOrder.createdAt,
+                    adminMessage: `🍔 *New Food Order Received!*
+                    
+*Customer:* ${savedOrder.customerName}
+*Phone:* ${savedOrder.customerPhone || 'Not provided'}
+*Total Amount:* ₹${savedOrder.totalAmount}
+
+*Items Ordered:*
+${savedOrder.items.map(item => `• ${item.name} (x${item.quantity})`).join('\n')}
+
+*Delivery Address:* 
+${savedOrder.address}
+
+*Special Instructions:* 
+${savedOrder.instructions || 'None'}`
+                }),
+            });
+            
+            if (response.ok) {
+                console.log('n8n: Webhook notification sent successfully.');
+            } else {
+                const errorText = await response.text();
+                console.error(`n8n: Webhook notification failed with status: ${response.status}. Error: ${errorText}`);
+            }
+        } catch (webhookErr) {
+            console.error('n8n: Failed to send webhook notification:', webhookErr);
+        }
+
         // Send Push Notification to Admins
         if (req.firebaseAdmin) {
             try {
